@@ -24,3 +24,22 @@ body {
 * {
   border-color: var(--color-bg-elevated);
 }
+
+.form-input {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-bg-elevated);
+  border-radius: 0.5rem;
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  border-color: var(--color-neon-purple);
+}
+
+.form-input::placeholder {
+  color: var(--color-text-muted);
+}
