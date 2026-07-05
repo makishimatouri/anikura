@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0d0d12;
+  --color-bg-card: #16161f;
+  --color-bg-elevated: #1e1e2a;
+  --color-neon-purple: #a855f7;
+  --color-neon-pink: #ec4899;
+  --color-neon-blue: #6366f1;
+  --color-text: #f0f0f5;
+  --color-text-muted: #8a8a9a;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+* {
+  border-color: var(--color-bg-elevated);
+}
