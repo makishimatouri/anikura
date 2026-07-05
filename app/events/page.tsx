@@ -1,5 +1,7 @@
 import EventList from "@/components/events/EventList";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "全国活动 · Anikura 中国",
   description: "收录全国各地的 Anikura、Vocaloid、东方 Project 等二次元音乐活动",

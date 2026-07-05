@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Event, EventTag } from "@/lib/types";
+import { Event, EventTag, EventStatus } from "@/lib/types";
 
 const ALL_TAGS: EventTag[] = ["anikura", "bokakura", "touhou", "vocaloid", "game", "vtuber"];
 const TAG_LABELS: Record<EventTag, string> = {
@@ -207,7 +207,7 @@ export default function EventForm({ initialData }: EventFormProps) {
         <FormField label="状态">
           <select
             value={form.status}
-            onChange={(e) => update("status", e.target.value)}
+            onChange={(e) => update("status", e.target.value as EventStatus)}
             className="form-input"
           >
             <option value="ongoing">进行中</option>

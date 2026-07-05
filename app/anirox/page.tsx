@@ -1,6 +1,8 @@
 import { getAniroxEvents } from "@/lib/queries";
 import EventCard from "@/components/events/EventCard";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "AniROX 专场 · Anikura 中国",
   description: "AniROX 厂牌主办的二次元音乐活动，包括 Anikura DJ 派对、Vocaloid 专场等。",

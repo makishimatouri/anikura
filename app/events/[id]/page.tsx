@@ -5,6 +5,8 @@ import { EVENT_TAG_LABELS, EVENT_TAG_COLORS } from "@/lib/types";
 import QQGroupButton from "@/components/events/QQGroupButton";
 import AniROXBadge from "@/components/anirox/AniROXBadge";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
