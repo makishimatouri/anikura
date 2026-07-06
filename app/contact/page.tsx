@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "联系我们 · Anikura 中国",
+  title: "联系我们 · Anikura CN",
   description: "联系 AniROX 厂牌，提交活动信息或商务合作。",
 };
 

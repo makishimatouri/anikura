@@ -10,12 +10,27 @@ export default function AdminEventsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchEvents();
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!data.session) {
+        window.location.href = "/admin/login";
+        return;
+      }
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_admin, is_super_admin")
+        .eq("id", data.session.user.id)
+        .single();
+      if (!profile?.is_admin && !profile?.is_super_admin) {
+        window.location.href = "/";
+        return;
+      }
+      fetchEvents();
+    });
   }, []);
 
   async function fetchEvents() {
     const { data } = await supabase.from("events").select("*").order("date", { ascending: false });
-    setEvents(data ?? []);
+    setEvents((data ?? []) as Event[]);
     setLoading(false);
   }
 

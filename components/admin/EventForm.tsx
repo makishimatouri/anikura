@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Event, EventTag, EventStatus } from "@/lib/types";
@@ -17,12 +17,19 @@ const TAG_LABELS: Record<EventTag, string> = {
 
 interface EventFormProps {
   initialData?: Event;
+  isSuper?: boolean;
 }
 
-export default function EventForm({ initialData }: EventFormProps) {
+export default function EventForm({ initialData, isSuper = false }: EventFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setUserId(data.session?.user.id ?? null));
+  }, []);
+
   const [form, setForm] = useState({
     title: initialData?.title ?? "",
     date: initialData?.date ?? "",
@@ -39,6 +46,8 @@ export default function EventForm({ initialData }: EventFormProps) {
     status: initialData?.status ?? "ongoing",
     is_anirox: initialData?.is_anirox ?? false,
     is_featured: initialData?.is_featured ?? false,
+    has_lottery: initialData?.has_lottery ?? false,
+    lottery_points_cost: initialData?.lottery_points_cost ?? 30,
     qq_group: initialData?.qq_group ?? "",
     qq_group_name: initialData?.qq_group_name ?? "",
   });
@@ -61,6 +70,8 @@ export default function EventForm({ initialData }: EventFormProps) {
 
     const payload = {
       ...form,
+      created_by: userId,
+      review_status: isSuper ? "approved" : "pending",
       updated_at: new Date().toISOString(),
     };
 
@@ -75,7 +86,8 @@ export default function EventForm({ initialData }: EventFormProps) {
       return;
     }
 
-    router.push("/admin/events");
+    const redirectTo = isSuper ? "/admin/dashboard" : "/admin/panel";
+    router.push(redirectTo);
     router.refresh();
   }
 
@@ -238,38 +250,116 @@ export default function EventForm({ initialData }: EventFormProps) {
         </FormField>
       </div>
 
-      <FormField label="海报图片 URL">
-        <input
-          type="url"
-          value={form.poster_url}
-          onChange={(e) => update("poster_url", e.target.value)}
-          className="form-input"
-          placeholder="https://..."
-        />
+      <FormField label="海报图片">
+        <div className="space-y-3">
+          {form.poster_url && (
+            <div className="w-full max-w-sm rounded-lg overflow-hidden bg-bg-elevated">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={form.poster_url} alt="预览" className="w-full h-auto object-contain" />
+            </div>
+          )}
+          <div className="flex items-center gap-3">
+            <label className="cursor-pointer px-4 py-2 rounded-lg border border-bg-elevated text-text-muted hover:border-neon-purple/50 hover:text-text transition-colors text-sm">
+              上传图片
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 5 * 1024 * 1024) {
+                    alert("图片过大，请上传 5MB 以内的文件");
+                    return;
+                  }
+                  setLoading(true);
+                  const ext = file.name.split(".").pop();
+                  const filename = `${Date.now()}.${ext}`;
+                  const { error: uploadError } = await supabase.storage
+                    .from("posters")
+                    .upload(filename, file);
+                  if (uploadError) {
+                    alert("上传失败：" + uploadError.message);
+                    setLoading(false);
+                    return;
+                  }
+                  const { data: urlData } = supabase.storage
+                    .from("posters")
+                    .getPublicUrl(filename);
+                  update("poster_url", urlData.publicUrl);
+                  setLoading(false);
+                }}
+              />
+            </label>
+            {form.poster_url && (
+              <button
+                type="button"
+                onClick={() => update("poster_url", "")}
+                className="text-xs text-red-400 hover:text-red-300"
+              >
+                移除
+              </button>
+            )}
+            <span className="text-xs text-text-muted">或粘贴图片链接</span>
+          </div>
+          <input
+            type="url"
+            value={form.poster_url}
+            onChange={(e) => update("poster_url", e.target.value)}
+            className="form-input"
+            placeholder="https://..."
+          />
+        </div>
       </FormField>
 
-      <div className="flex flex-wrap gap-6">
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={form.is_anirox}
-            onChange={(e) => update("is_anirox", e.target.checked)}
-            className="w-4 h-4 rounded accent-neon-purple"
-          />
-          AniROX 厂牌活动
-        </label>
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={form.is_featured}
-            onChange={(e) => update("is_featured", e.target.checked)}
-            className="w-4 h-4 rounded accent-neon-purple"
-          />
-          首页精选推荐
-        </label>
-      </div>
+      {isSuper && (
+        <>
+          <div className="flex flex-wrap gap-6">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={form.is_anirox}
+                onChange={(e) => update("is_anirox", e.target.checked)}
+                className="w-4 h-4 rounded accent-neon-purple"
+              />
+              AniROX 厂牌活动
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={form.is_featured}
+                onChange={(e) => update("is_featured", e.target.checked)}
+                className="w-4 h-4 rounded accent-neon-purple"
+              />
+              首页精选推荐
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={form.has_lottery}
+                onChange={(e) => update("has_lottery", e.target.checked)}
+                className="w-4 h-4 rounded accent-neon-purple"
+              />
+              开启积分抽奖
+            </label>
+          </div>
 
-      <div className="flex gap-4 pt-4">
+          {form.has_lottery && (
+            <FormField label="抽奖所需积分">
+              <input
+                type="number"
+                min={1}
+                value={form.lottery_points_cost}
+                onChange={(e) => update("lottery_points_cost", parseInt(e.target.value) || 30)}
+                className="form-input"
+                placeholder="30"
+              />
+            </FormField>
+          )}
+        </>
+      )}
+
+      <div className="flex gap-4 pt-4 flex-wrap">
         <button
           type="submit"
           disabled={loading}
@@ -277,9 +367,37 @@ export default function EventForm({ initialData }: EventFormProps) {
         >
           {loading ? "保存中…" : initialData ? "保存修改" : "创建活动"}
         </button>
+        {isSuper && initialData && initialData.review_status === "pending" && (
+          <>
+            <button
+              type="button"
+              onClick={async () => {
+                if (!confirm("确认通过该活动？")) return;
+                await supabase.from("events").update({ review_status: "approved" }).eq("id", initialData.id);
+                router.push("/admin/dashboard");
+                router.refresh();
+              }}
+              className="px-6 py-2.5 rounded-lg bg-green-600 text-white font-medium hover:bg-green-500"
+            >
+              审核通过
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                if (!confirm("确认拒绝该活动？")) return;
+                await supabase.from("events").update({ review_status: "rejected" }).eq("id", initialData.id);
+                router.push("/admin/dashboard");
+                router.refresh();
+              }}
+              className="px-6 py-2.5 rounded-lg border border-red-500/50 text-red-400 hover:bg-red-500/10"
+            >
+              拒绝
+            </button>
+          </>
+        )}
         <button
           type="button"
-          onClick={() => router.push("/admin/events")}
+          onClick={() => router.push(isSuper ? "/admin/dashboard" : "/admin/panel")}
           className="px-6 py-2.5 rounded-lg border border-bg-elevated text-text-muted hover:text-text transition-colors"
         >
           取消

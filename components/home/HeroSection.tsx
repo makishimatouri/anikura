@@ -7,12 +7,12 @@ export default function HeroSection() {
 
       <div className="relative max-w-4xl mx-auto px-4 text-center">
         <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue bg-clip-text text-transparent leading-tight">
-          Anikura 中国
+          Anikura CN
         </h1>
         <p className="mt-6 text-lg md:text-xl text-text-muted max-w-2xl mx-auto leading-relaxed">
-          Anikura（アニクラ）即「动漫歌曲夜店活动」——DJ 播放动画金曲，VJ 同步投放动画画面。
+          Anikura（アニクラ）即「动漫歌曲club活动」——DJ 播放动画金曲，VJ 同步投放动画画面。
           <br className="hidden md:block" />
-          我们收录全国 Anikura、Vocaloid、东方 Project 等二次元音乐活动，由 AniROX 厂牌维护。
+          我们收录全国 Anikura、Vocaloid、东方 Project 等二次元音乐活动，亦可为各地主办提供前期的数调支持，本网站由 AniROX 厂牌维护。
         </p>
         <div className="mt-8 flex flex-wrap gap-4 justify-center">
           <a

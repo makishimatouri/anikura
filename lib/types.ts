@@ -25,10 +25,18 @@ export interface Event {
   status: EventStatus;
   is_anirox: boolean;
   is_featured: boolean;
+  has_lottery: boolean;
+  lottery_points_cost: number;
+  review_status: string | null;
   qq_group: string | null;
   qq_group_name: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/** 管理员活动列表项（包含所有字段 + 审核状态） */
+export interface AdminEvent extends Event {
+  created_by: string | null;
 }
 
 export const EVENT_TAG_LABELS: Record<EventTag, string> = {

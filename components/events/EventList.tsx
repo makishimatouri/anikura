@@ -14,6 +14,7 @@ export default async function EventList({ city, tag, month }: EventListProps) {
     .from("events")
     .select("*")
     .eq("status", "ongoing")
+    .eq("review_status", "approved")
     .order("is_anirox", { ascending: false })
     .order("date", { ascending: true });
 
@@ -21,7 +22,10 @@ export default async function EventList({ city, tag, month }: EventListProps) {
   if (tag) query = query.contains("tags", [tag]);
   if (month) {
     const monthStart = `${month}-01`;
-    const monthEnd = `${month}-31`;
+    // 取该月最后一天，避免 9/11 月用 31 号导致无效日期
+    const [y, m] = month.split("-").map(Number);
+    const lastDay = new Date(y, m, 0).getDate();
+    const monthEnd = `${month}-${String(lastDay).padStart(2, "0")}`;
     query = query.gte("date", monthStart).lte("date", monthEnd);
   }
 

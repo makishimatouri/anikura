@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className="border-t border-bg-elevated mt-20 py-10">
       <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="text-text-muted text-sm">
-          <p>AniROX 厂牌 · Anikura 中国活动聚合</p>
+          <p>AniROX 厂牌 · Anikura CN 活动聚合</p>
           <p className="mt-1">© {new Date().getFullYear()} AniROX. All rights reserved.</p>
         </div>
         <div className="flex gap-6 text-sm text-text-muted">
