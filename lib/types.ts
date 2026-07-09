@@ -17,6 +17,7 @@ export interface Event {
   city: string;
   venue: string;
   tags: EventTag[];
+  header_image_url: string | null;
   poster_url: string | null;
   description: string | null;
   ticket_price: string | null;

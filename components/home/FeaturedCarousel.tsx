@@ -71,6 +71,7 @@ export default function FeaturedCarousel({ events }: FeaturedCarouselProps) {
   const slide = slides[current];
   const event = slide as Event;
   const demoSlide = slide as typeof DEMO_SLIDES[0];
+  const eventHeaderImage = event.header_image_url || event.poster_url;
 
   return (
     <section className="max-w-6xl mx-auto px-4 py-10">
@@ -135,11 +136,11 @@ export default function FeaturedCarousel({ events }: FeaturedCarouselProps) {
         ) : (
           <Link href={`/events/${event.id}`} className="block">
             <div className="relative aspect-[21/9] md:aspect-[21/7]">
-              {event.poster_url ? (
+              {eventHeaderImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   key={event.id}
-                  src={event.poster_url}
+                  src={eventHeaderImage}
                   alt={event.title}
                   className="w-full h-full object-cover animate-[fadeIn_0.5s_ease]"
                 />

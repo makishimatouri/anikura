@@ -38,6 +38,7 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
     city: initialData?.city ?? "",
     venue: initialData?.venue ?? "",
     tags: initialData?.tags ?? [] as EventTag[],
+    header_image_url: initialData?.header_image_url ?? "",
     poster_url: initialData?.poster_url ?? "",
     description: initialData?.description ?? "",
     ticket_price: initialData?.ticket_price ?? "",
@@ -63,16 +64,48 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
     }));
   }
 
+  async function uploadImage(file: File, prefix: "headers" | "posters") {
+    if (file.size > 5 * 1024 * 1024) {
+      alert("图片过大，请上传 5MB 以内的文件");
+      return null;
+    }
+
+    setLoading(true);
+    const ext = file.name.split(".").pop();
+    const filename = `${prefix}/${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from("posters")
+      .upload(filename, file);
+
+    setLoading(false);
+
+    if (uploadError) {
+      alert("上传失败：" + uploadError.message);
+      return null;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("posters")
+      .getPublicUrl(filename);
+    return urlData.publicUrl;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
 
+    const headerImageValue = form.header_image_url.trim() || null;
     const payload = {
       ...form,
+      header_image_url: undefined as string | null | undefined,
+      poster_url: form.poster_url.trim() || null,
       review_status: isSuper ? "approved" : "pending",
       updated_at: new Date().toISOString(),
     };
+    if (headerImageValue || initialData?.header_image_url !== undefined) {
+      payload.header_image_url = headerImageValue;
+    }
 
     const { error } = initialData
       ? await supabase.from("events").update(payload).eq("id", initialData.id)
@@ -81,6 +114,10 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
     setLoading(false);
 
     if (error) {
+      if (error.message.includes("header_image_url")) {
+        setError("保存失败：数据库还没有添加头图字段 header_image_url。请先在 Supabase SQL Editor 执行仓库里的 supabase/migrations/20260709_add_event_header_image.sql。");
+        return;
+      }
       setError("保存失败：" + error.message);
       return;
     }
@@ -249,6 +286,18 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
         </FormField>
       </div>
 
+      <ImageUploadField
+        label="头图图片（可选）"
+        helpText="推荐 16:9 或 21:9 横图，建议至少 1600×900。用于首页轮播和活动卡片；不上传时会自动裁剪海报作为头图展示。"
+        value={form.header_image_url}
+        previewClassName="aspect-[16/9] object-cover"
+        onChange={(value) => update("header_image_url", value)}
+        onUpload={async (file) => {
+          const url = await uploadImage(file, "headers");
+          if (url) update("header_image_url", url);
+        }}
+      />
+
       <FormField label="海报图片">
         <div className="space-y-3">
           {form.poster_url && (
@@ -267,26 +316,8 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
                 onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
-                  if (file.size > 5 * 1024 * 1024) {
-                    alert("图片过大，请上传 5MB 以内的文件");
-                    return;
-                  }
-                  setLoading(true);
-                  const ext = file.name.split(".").pop();
-                  const filename = `${Date.now()}.${ext}`;
-                  const { error: uploadError } = await supabase.storage
-                    .from("posters")
-                    .upload(filename, file);
-                  if (uploadError) {
-                    alert("上传失败：" + uploadError.message);
-                    setLoading(false);
-                    return;
-                  }
-                  const { data: urlData } = supabase.storage
-                    .from("posters")
-                    .getPublicUrl(filename);
-                  update("poster_url", urlData.publicUrl);
-                  setLoading(false);
+                  const url = await uploadImage(file, "posters");
+                  if (url) update("poster_url", url);
                 }}
               />
             </label>
@@ -299,7 +330,7 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
                 移除
               </button>
             )}
-            <span className="text-xs text-text-muted">或粘贴图片链接</span>
+            <span className="text-xs text-text-muted">或粘贴图片链接。详情页会展示完整海报原图，不裁剪。</span>
           </div>
           <input
             type="url"
@@ -421,5 +452,67 @@ function FormField({ label, required, children }: { label: string; required?: bo
       </label>
       {children}
     </div>
+  );
+}
+
+function ImageUploadField({
+  label,
+  helpText,
+  value,
+  previewClassName,
+  onChange,
+  onUpload,
+}: {
+  label: string;
+  helpText: string;
+  value: string;
+  previewClassName: string;
+  onChange: (value: string) => void;
+  onUpload: (file: File) => Promise<void>;
+}) {
+  return (
+    <FormField label={label}>
+      <div className="space-y-3">
+        <p className="text-xs text-text-muted leading-relaxed">{helpText}</p>
+        {value && (
+          <div className="w-full max-w-sm rounded-lg overflow-hidden bg-bg-elevated">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={value} alt="预览" className={`w-full ${previewClassName}`} />
+          </div>
+        )}
+        <div className="flex items-center gap-3 flex-wrap">
+          <label className="cursor-pointer px-4 py-2 rounded-lg border border-bg-elevated text-text-muted hover:border-neon-purple/50 hover:text-text transition-colors text-sm">
+            上传图片
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                await onUpload(file);
+              }}
+            />
+          </label>
+          {value && (
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              className="text-xs text-red-400 hover:text-red-300"
+            >
+              移除
+            </button>
+          )}
+          <span className="text-xs text-text-muted">或粘贴图片链接</span>
+        </div>
+        <input
+          type="url"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="form-input"
+          placeholder="https://..."
+        />
+      </div>
+    </FormField>
   );
 }

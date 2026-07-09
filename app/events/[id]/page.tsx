@@ -31,11 +31,11 @@ export default async function EventDetailPage({ params }: PageProps) {
         ← 返回活动列表
       </Link>
 
-      {/* 海报 */}
+      {/* 海报原图：详情页保留完整比例，不做头图裁剪 */}
       {event.poster_url && (
-        <div className="aspect-[16/9] rounded-xl overflow-hidden mb-6 bg-bg-elevated">
+        <div className="rounded-xl overflow-hidden mb-6 bg-bg-elevated border border-bg-elevated">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={event.poster_url} alt={event.title} className="w-full h-full object-cover" />
+          <img src={event.poster_url} alt={event.title} className="w-full h-auto object-contain" />
         </div>
       )}
 

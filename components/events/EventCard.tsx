@@ -8,17 +8,19 @@ function formatDate(dateStr: string): string {
 }
 
 export default function EventCard({ event }: { event: Event }) {
+  const headerImage = event.header_image_url || event.poster_url;
+
   return (
     <Link
       href={`/events/${event.id}`}
       className="block group bg-bg-card border border-bg-elevated rounded-xl overflow-hidden hover:border-neon-purple/50 hover:shadow-lg hover:shadow-neon-purple/10 transition-all duration-300"
     >
-      {/* 海报 */}
+      {/* 头图：未上传头图时自动用海报裁剪展示 */}
       <div className="aspect-[16/9] bg-bg-elevated relative overflow-hidden">
-        {event.poster_url ? (
+        {headerImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={event.poster_url}
+            src={headerImage}
             alt={event.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
