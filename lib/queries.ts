@@ -21,6 +21,7 @@ export async function getRecommendationEvents(): Promise<Event[]> {
     .select("*")
     .eq("status", "ongoing")
     .eq("review_status", "approved")
+    .eq("is_featured", true)
     .order("date", { ascending: true });
 
   if (error) throw error;
