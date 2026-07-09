@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Event } from "@/lib/types";
 
@@ -85,7 +85,13 @@ export default function MobileHomeSections({
         }}
         title="ANIKURA CN"
         titleClassName="bg-gradient-to-r from-neon-purple to-neon-pink bg-clip-text text-transparent"
-        body="我们是全国最大的以ankr活动为核心的聚合信息站。"
+        body={
+          <>
+            Anikura（アニクラ）即「动漫歌曲club活动」——DJ 播放动画金曲，VJ 同步投放动画画面。
+            <br />
+            我们收录全国 Anikura、Vocaloid、东方 Project 等二次元音乐活动，亦可为各地主办提供前期的数调支持，本网站由 AniROX 厂牌维护。
+          </>
+        }
         primaryHref="/events"
         primaryLabel="查看活动"
         secondaryHref="/anirox"
@@ -236,7 +242,7 @@ function MobilePanel({
   eyebrow?: string;
   title: string;
   titleClassName?: string;
-  body: string;
+  body: ReactNode;
   primaryHref: string;
   primaryLabel: string;
   secondaryHref: string;
