@@ -83,8 +83,7 @@ export default function MobileHomeSections({
         setRef={(node) => {
           sectionRefs.current[0] = node;
         }}
-        eyebrow="ANIKURA CN"
-        title="动漫歌曲 club 活动入口"
+        title="ANIKURA CN"
         body="找活动、看厂牌、签到积分，都从这里进。"
         primaryHref="/events"
         primaryLabel="查看活动"
@@ -232,7 +231,7 @@ function MobilePanel({
   index: number;
   active: number;
   setRef: (node: HTMLElement | null) => void;
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   body: string;
   primaryHref: string;
@@ -255,8 +254,12 @@ function MobilePanel({
           isActive ? "translate-y-0 opacity-100" : "translate-y-8 opacity-45"
         }`}
       >
-        <p className="text-xs font-medium tracking-[0.24em] text-neon-pink">{eyebrow}</p>
-        <h2 className="mt-3 max-w-[11ch] text-5xl font-bold leading-tight">{title}</h2>
+        {eyebrow && (
+          <p className="text-xs font-medium tracking-[0.24em] text-neon-pink">{eyebrow}</p>
+        )}
+        <h2 className={`${eyebrow ? "mt-3" : ""} max-w-[11ch] text-5xl font-bold leading-tight`}>
+          {title}
+        </h2>
         <p className="mt-5 max-w-xs text-base leading-relaxed text-text-muted">{body}</p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
