@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { Event, EventTag, EVENT_TAG_LABELS, EVENT_TAG_COLORS } from "@/lib/types";
 
@@ -47,6 +47,9 @@ const DEMO_SLIDES = [
 export default function FeaturedCarousel({ events }: FeaturedCarouselProps) {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const touchDeltaRef = useRef({ x: 0, y: 0 });
+  const swipedRef = useRef(false);
 
   // 用真实数据或 demo
   const slides = events.length > 0 ? events : DEMO_SLIDES;
@@ -59,6 +62,61 @@ export default function FeaturedCarousel({ events }: FeaturedCarouselProps) {
   const prev = useCallback(() => {
     setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
   }, [slides.length]);
+
+  const resetTouch = useCallback(() => {
+    touchStartRef.current = null;
+    touchDeltaRef.current = { x: 0, y: 0 };
+  }, []);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    if (slides.length <= 1) return;
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    touchDeltaRef.current = { x: 0, y: 0 };
+    swipedRef.current = false;
+    setPaused(true);
+  }, [slides.length]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    if (!touchStartRef.current || slides.length <= 1) return;
+    const touch = e.touches[0];
+    touchDeltaRef.current = {
+      x: touch.clientX - touchStartRef.current.x,
+      y: touch.clientY - touchStartRef.current.y,
+    };
+  }, [slides.length]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!touchStartRef.current || slides.length <= 1) {
+      resetTouch();
+      setPaused(false);
+      return;
+    }
+
+    const { x, y } = touchDeltaRef.current;
+    const horizontalSwipe = Math.abs(x) >= 48 && Math.abs(x) > Math.abs(y) * 1.2;
+
+    if (horizontalSwipe) {
+      swipedRef.current = true;
+      if (x < 0) {
+        next();
+      } else {
+        prev();
+      }
+      window.setTimeout(() => {
+        swipedRef.current = false;
+      }, 350);
+    }
+
+    resetTouch();
+    setPaused(false);
+  }, [next, prev, resetTouch, slides.length]);
+
+  const handleSlideClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!swipedRef.current) return;
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
 
   useEffect(() => {
     if (paused || slides.length <= 1) return;
@@ -98,9 +156,16 @@ export default function FeaturedCarousel({ events }: FeaturedCarouselProps) {
       </div>
 
       <div
-        className="relative rounded-2xl overflow-hidden bg-bg-card border border-bg-elevated"
+        className="relative rounded-2xl overflow-hidden bg-bg-card border border-bg-elevated select-none touch-pan-y"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={() => {
+          resetTouch();
+          setPaused(false);
+        }}
       >
         {isDemo ? (
           <div className="block">
@@ -134,7 +199,7 @@ export default function FeaturedCarousel({ events }: FeaturedCarouselProps) {
             </div>
           </div>
         ) : (
-          <Link href={`/events/${event.id}`} className="block">
+          <Link href={`/events/${event.id}`} className="block" onClick={handleSlideClick}>
             <div className="relative aspect-[21/9] md:aspect-[21/7]">
               {eventHeaderImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
