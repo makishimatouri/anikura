@@ -15,6 +15,18 @@ export async function getFeaturedEvents(): Promise<Event[]> {
   return data ?? [];
 }
 
+export async function getRecommendationEvents(): Promise<Event[]> {
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("status", "ongoing")
+    .eq("review_status", "approved")
+    .order("date", { ascending: true });
+
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function getUpcomingEvents(limit = 9): Promise<Event[]> {
   const { data, error } = await supabase
     .from("events")

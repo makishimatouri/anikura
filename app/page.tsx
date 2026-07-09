@@ -1,17 +1,17 @@
 import HeroSection from "@/components/home/HeroSection";
-import FeaturedCarousel from "@/components/home/FeaturedCarousel";
+import RandomRecommendation from "@/components/home/RandomRecommendation";
 import FeaturedEvents from "@/components/home/FeaturedEvents";
-import { getFeaturedEvents } from "@/lib/queries";
+import { getRecommendationEvents } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const featured = await getFeaturedEvents();
+  const recommendationEvents = await getRecommendationEvents();
 
   return (
     <>
       <HeroSection />
-      <FeaturedCarousel events={featured} />
+      <RandomRecommendation events={recommendationEvents} />
       <FeaturedEvents />
     </>
   );
