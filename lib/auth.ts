@@ -1,4 +1,4 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -12,10 +12,10 @@ export async function getServerSupabase() {
         get(name: string) {
           return cookieStore.get(name)?.value;
         },
-        set(name: string, value: string, options: CookieOptions) {
+        set() {
           // no-op for server-side reads
         },
-        remove(name: string, options: CookieOptions) {
+        remove() {
           // no-op
         },
       },

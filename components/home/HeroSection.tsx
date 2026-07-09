@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function HeroSection() {
   return (
     <section className="relative overflow-hidden py-20 md:py-28">
@@ -15,18 +17,18 @@ export default function HeroSection() {
           我们收录全国 Anikura、Vocaloid、东方 Project 等二次元音乐活动，亦可为各地主办提供前期的数调支持，本网站由 AniROX 厂牌维护。
         </p>
         <div className="mt-8 flex flex-wrap gap-4 justify-center">
-          <a
+          <Link
             href="/events"
             className="px-6 py-3 rounded-full bg-gradient-to-r from-neon-purple to-neon-pink text-white font-medium hover:opacity-90 transition-opacity"
           >
             查看活动
-          </a>
-          <a
+          </Link>
+          <Link
             href="/anirox"
             className="px-6 py-3 rounded-full border border-bg-elevated text-text-muted hover:text-text hover:border-neon-purple/50 transition-all"
           >
             AniROX 专场
-          </a>
+          </Link>
         </div>
       </div>
     </section>

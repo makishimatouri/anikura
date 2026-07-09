@@ -38,7 +38,7 @@ const DEMO_SLIDES = [
     city: "待定",
     venue: "待定",
     date: "待定",
-    tags: ["anikura", "game"] as any,
+    tags: ["anikura", "game"] as EventTag[],
     is_anirox: true,
     color: "from-pink-600/30 via-neon-pink/20 to-purple-600/30",
   },

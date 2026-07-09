@@ -9,6 +9,12 @@ export default function AdminEventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
 
+  async function fetchEvents() {
+    const { data } = await supabase.from("events").select("*").order("date", { ascending: false });
+    setEvents((data ?? []) as Event[]);
+    setLoading(false);
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) {
@@ -27,12 +33,6 @@ export default function AdminEventsPage() {
       fetchEvents();
     });
   }, []);
-
-  async function fetchEvents() {
-    const { data } = await supabase.from("events").select("*").order("date", { ascending: false });
-    setEvents((data ?? []) as Event[]);
-    setLoading(false);
-  }
 
   async function handleDelete(id: string) {
     if (!confirm("确认删除这个活动？")) return;

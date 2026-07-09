@@ -1,40 +1,83 @@
 # Anikura CN
 
-中国二次元音乐活动聚合平台，收录全国 Anikura、Vocaloid、东方 Project 等 club 活动信息。由 AniROX 厂牌维护。
+Anikura CN 是中国国内二次元音乐活动聚合网站，收录 Anikura、Vocaloid、东方 Project、VTuber、游戏音乐等相关 club 活动信息。项目由 AniROX 发起和维护。
 
-## 主要功能
+线上地址：https://www.anikura.cn
 
-- 📅 全国活动日历与多维筛选（城市 / 类型 / 月份）
-- 🎵 AniROX 厂牌专场活动
-- 💬 QQ 一键加群
-- 🔔 活动精选推荐轮播
-- 📅 每日签到赚积分
-- 🎟️ 积分商城（优惠券兑换 / 活动门票抽奖）
+## 功能范围
+
+- 全国活动列表、详情页、城市和类型筛选
+- 首页精选活动轮播
+- AniROX 厂牌活动独立页面
+- 主办方联系与活动提交入口
+- QQ 一键加群跳转
+- 管理员登录、活动录入、编辑、审核和通知
+- 用户注册、每日签到、积分、优惠券兑换和门票抽奖入口
+- Supabase Storage 海报上传
 
 ## 技术栈
 
-- **前端**：Next.js 6 + TypeScript + Tailwind CSS 4
-- **后端**：Supabase (PostgreSQL + Auth + Storage)
-- **部署**：Vercel
+- Next.js 16 App Router
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Supabase PostgreSQL/Auth/Storage
+- Vercel + Cloudflare
 
 ## 本地开发
 
 ```bash
-git clone https://github.com/makishimatouri/anikura.git
+git clone git@github.com:makishimatouri/anikura.git
 cd anikura
 cp .env.local.example .env.local
-# 填入 Supabase 配置
 npm install
 npm run dev
 ```
 
-访问 http://localhost:3000
+访问 `http://localhost:3000`。
 
-## 积分规则
+`.env.local` 需要填写 Supabase 配置：
 
-- 每日签到：随机 5–20 积分，连续 7 天额外 +10
-- 积分可兑换活动优惠券或参与抽奖
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+```
+
+不要提交 `.env.local`，不要在截图或文档里暴露 Supabase secret key。
+
+## 常用命令
+
+```bash
+npm run dev
+npm run typecheck
+npm run lint
+npm run build
+npm run check
+```
+
+## 版本留档
+
+正式版本从 `v0.1.0` 开始。每次上线前先确认构建通过，再提交、打 tag、推送：
+
+```bash
+npm run check
+git add .
+git commit -m "release: v0.1.1"
+git tag -a v0.1.1 -m "v0.1.1"
+git push origin main
+git push origin v0.1.1
+```
+
+更多说明见 [版本管理](docs/VERSIONING.md) 和 [变更记录](CHANGELOG.md)。
+
+## 项目文档
+
+- [架构说明](docs/ARCHITECTURE.md)
+- [部署说明](docs/DEPLOYMENT.md)
+- [版本管理](docs/VERSIONING.md)
+- [维护清单](docs/MAINTENANCE.md)
 
 ## License
 
-© 2026 AniROX. All rights reserved.
+Copyright 2026 AniROX. All rights reserved.

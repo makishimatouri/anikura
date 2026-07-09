@@ -7,24 +7,12 @@ import { supabase } from "@/lib/supabase";
 export default function CheckinPage() {
   const [loading, setLoading] = useState(false);
   const [checkedIn, setCheckedIn] = useState(false);
-  const [points, setPoints] = useState(0);
   const [streak, setStreak] = useState(0);
   const [totalPoints, setTotalPoints] = useState(0);
   const [result, setResult] = useState<{ points: number; streak: number } | null>(
     null
   );
   const [session, setSession] = useState(false);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
-        setSession(false);
-        return;
-      }
-      setSession(true);
-      loadStatus(data.session.user.id);
-    });
-  }, []);
 
   async function loadStatus(uid: string) {
     const today = new Date().toISOString().split("T")[0];
@@ -37,7 +25,6 @@ export default function CheckinPage() {
 
     if (checkin) {
       setCheckedIn(true);
-      setPoints(checkin.points_earned);
     }
 
     const { data: profile } = await supabase
@@ -51,6 +38,17 @@ export default function CheckinPage() {
       setTotalPoints(profile.total_points);
     }
   }
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        setSession(false);
+        return;
+      }
+      setSession(true);
+      loadStatus(data.session.user.id);
+    });
+  }, []);
 
   async function handleCheckin() {
     setLoading(true);
@@ -105,7 +103,6 @@ export default function CheckinPage() {
         .eq("id", session.user.id);
 
       setCheckedIn(true);
-      setPoints(earned);
       setStreak(newStreak);
       setTotalPoints((profile?.total_points ?? 0) + earned + bonus);
       setResult({ points: earned + bonus, streak: newStreak });

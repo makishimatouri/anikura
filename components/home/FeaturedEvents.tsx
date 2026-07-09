@@ -1,5 +1,6 @@
 import { getFeaturedEvents, getUpcomingEvents } from "@/lib/queries";
 import EventCard from "@/components/events/EventCard";
+import Link from "next/link";
 
 export default async function FeaturedEvents() {
   const featured = await getFeaturedEvents();
@@ -20,12 +21,12 @@ export default async function FeaturedEvents() {
       </div>
       {displayEvents.length >= 6 && (
         <div className="mt-8 text-center">
-          <a
+          <Link
             href="/events"
             className="text-neon-purple hover:text-neon-pink transition-colors text-sm"
           >
             查看全部活动 →
-          </a>
+          </Link>
         </div>
       )}
     </section>

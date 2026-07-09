@@ -16,10 +16,6 @@ export default function NotificationsPage() {
   const [notifs, setNotifs] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadNotifs();
-  }, []);
-
   async function loadNotifs() {
     const {
       data: { session },
@@ -41,6 +37,10 @@ export default function NotificationsPage() {
       await supabase.from("notifications").update({ is_read: true }).eq("user_id", session.user.id).eq("is_read", false);
     }
   }
+
+  useEffect(() => {
+    loadNotifs();
+  }, []);
 
   if (loading) {
     return <div className="text-center py-12 text-text-muted">加载中…</div>;

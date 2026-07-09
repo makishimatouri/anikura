@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/auth";
 
@@ -31,12 +32,12 @@ export default async function AdminPanelPage() {
           <h1 className="text-2xl font-bold">活动管理</h1>
           <p className="text-sm text-text-muted mt-1">录入活动 → 提交审核 → 通过后上线</p>
         </div>
-        <a
+        <Link
           href="/admin/events/new"
           className="px-4 py-2 rounded-lg bg-gradient-to-r from-neon-purple to-neon-pink text-white text-sm font-medium"
         >
           + 新活动
-        </a>
+        </Link>
       </div>
 
       {pending.length > 0 && (
