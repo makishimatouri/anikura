@@ -169,16 +169,13 @@ export default function FeaturedCarousel({ events }: FeaturedCarouselProps) {
       >
         {isDemo ? (
           <div className="block">
-            <div className={`relative aspect-[21/9] md:aspect-[21/7] bg-gradient-to-br ${demoSlide.color} flex items-center justify-center`}>
-              <span className="text-xl md:text-2xl font-bold text-white/80 tracking-wider px-8 text-center drop-shadow-lg">
-                {demoSlide.title}
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/30 to-transparent" />
+            <div className={`aspect-[21/9] md:aspect-[21/7] bg-gradient-to-br ${demoSlide.color} flex items-center justify-center`}>
+              <span className="text-5xl opacity-40">🎵</span>
             </div>
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
+            <div className="p-5 md:p-6">
               <div className="flex items-center gap-3 mb-3">
                 {"is_anirox" in demoSlide && demoSlide.is_anirox && (
-                  <span className="px-2.5 py-1 rounded-full bg-bg/80 backdrop-blur-sm text-xs font-medium text-neon-purple border border-neon-purple/30">
+                  <span className="px-2.5 py-1 rounded-full bg-neon-purple/15 text-xs font-medium text-neon-purple border border-neon-purple/30">
                     AniROX
                   </span>
                 )}
@@ -191,7 +188,7 @@ export default function FeaturedCarousel({ events }: FeaturedCarouselProps) {
                   </span>
                 ))}
               </div>
-              <h3 className="text-2xl md:text-3xl font-bold mb-2">{demoSlide.title}</h3>
+              <h3 className="text-xl md:text-2xl font-bold mb-2">{demoSlide.title}</h3>
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-text-muted">
                 <span>📅 {demoSlide.date}</span>
                 <span>📍 {demoSlide.city} · {demoSlide.venue}</span>
@@ -200,7 +197,7 @@ export default function FeaturedCarousel({ events }: FeaturedCarouselProps) {
           </div>
         ) : (
           <Link href={`/events/${event.id}`} className="block" onClick={handleSlideClick}>
-            <div className="relative aspect-[21/9] md:aspect-[21/7]">
+            <div className="aspect-[21/9] md:aspect-[21/7] bg-bg-elevated">
               {eventHeaderImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -214,12 +211,11 @@ export default function FeaturedCarousel({ events }: FeaturedCarouselProps) {
                   <span className="text-6xl opacity-50">🎵</span>
                 </div>
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent" />
             </div>
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
+            <div className="p-5 md:p-6">
               <div className="flex items-center gap-3 mb-3">
                 {event.is_anirox && (
-                  <span className="px-2.5 py-1 rounded-full bg-bg/80 backdrop-blur-sm text-xs font-medium text-neon-purple border border-neon-purple/30">
+                  <span className="px-2.5 py-1 rounded-full bg-neon-purple/15 text-xs font-medium text-neon-purple border border-neon-purple/30">
                     AniROX
                   </span>
                 )}
@@ -232,7 +228,7 @@ export default function FeaturedCarousel({ events }: FeaturedCarouselProps) {
                   </span>
                 ))}
               </div>
-              <h3 className="text-2xl md:text-3xl font-bold mb-2">{event.title}</h3>
+              <h3 className="text-xl md:text-2xl font-bold mb-2">{event.title}</h3>
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-text-muted">
                 <span>📅 {event.date}</span>
                 <span>📍 {event.city} · {event.venue}</span>
