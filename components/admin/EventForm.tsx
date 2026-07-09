@@ -288,7 +288,7 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
 
       <ImageUploadField
         label="头图图片（可选）"
-        helpText="推荐 16:9 或 21:9 横图，建议至少 1600×900。用于横向活动卡片和 AniROX 展示；不上传时会自动裁剪海报作为头图展示。首页随机推荐使用主海报原图。"
+        helpText="推荐 16:9 或 21:9 横图，建议至少 1600×900。用于横向活动卡片和 AniROX 展示；不上传时会自动裁剪海报作为头图展示。首页精选推荐使用主海报原图。"
         value={form.header_image_url}
         previewClassName="aspect-[16/9] object-cover"
         onChange={(value) => update("header_image_url", value)}
@@ -347,7 +347,7 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
           <div>
             <h2 className="text-sm font-semibold">超管运营设置</h2>
             <p className="text-xs text-text-muted mt-1">
-              首页随机推荐只会从已审核通过、状态为进行中，并勾选推荐的活动中抽取。
+              首页精选推荐只会从已审核通过、状态为进行中，并勾选推荐的活动中抽取。
             </p>
           </div>
           <div className="flex flex-wrap gap-6">
@@ -367,7 +367,7 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
                 onChange={(e) => update("is_featured", e.target.checked)}
                 className="w-4 h-4 rounded accent-neon-purple"
               />
-              推送至随机推荐
+              推送至精选推荐
             </label>
             <label className="flex items-center gap-2 text-sm">
               <input

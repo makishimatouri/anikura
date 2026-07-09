@@ -55,7 +55,7 @@ export default function AdminEventsPage() {
       .eq("id", event.id);
 
     if (error) {
-      alert("随机推荐状态更新失败：" + error.message);
+      alert("精选推荐状态更新失败：" + error.message);
     } else {
       setEvents((prev) =>
         prev.map((item) =>
@@ -118,7 +118,7 @@ export default function AdminEventsPage() {
                   <span className="px-1.5 py-0.5 rounded text-[10px] bg-neon-purple/20 text-neon-purple">AX</span>
                 )}
                 {event.is_featured && (
-                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-yellow-500/20 text-yellow-400">随机推荐</span>
+                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-yellow-500/20 text-yellow-400">精选推荐</span>
                 )}
                 <span className="truncate">{event.title}</span>
               </div>
@@ -141,8 +141,8 @@ export default function AdminEventsPage() {
                     {recommendationSavingId === event.id
                       ? "保存中"
                       : event.is_featured
-                        ? "取消随机推荐"
-                        : "推送随机推荐"}
+                        ? "取消精选推荐"
+                        : "推送精选推荐"}
                   </button>
                 )}
                 <Link
