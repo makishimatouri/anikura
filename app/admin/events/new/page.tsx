@@ -1,9 +1,9 @@
-import { requireAdmin } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { getServerSupabase, requireAdmin } from "@/lib/auth";
 import EventForm from "@/components/admin/EventForm";
 
 export default async function NewEventPage() {
   const session = await requireAdmin();
+  const supabase = await getServerSupabase();
   const { data: profile } = await supabase
     .from("profiles")
     .select("is_super_admin")

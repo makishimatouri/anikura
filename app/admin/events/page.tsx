@@ -8,6 +8,8 @@ import { Event } from "@/lib/types";
 export default function AdminEventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSuper, setIsSuper] = useState(false);
+  const [featuredSavingId, setFeaturedSavingId] = useState<string | null>(null);
 
   async function fetchEvents() {
     const { data } = await supabase.from("events").select("*").order("date", { ascending: false });
@@ -30,6 +32,7 @@ export default function AdminEventsPage() {
         window.location.href = "/";
         return;
       }
+      setIsSuper(!!profile.is_super_admin);
       fetchEvents();
     });
   }, []);
@@ -40,6 +43,27 @@ export default function AdminEventsPage() {
     if (!error) {
       fetchEvents();
     }
+  }
+
+  async function handleToggleFeatured(event: Event) {
+    if (!isSuper) return;
+    setFeaturedSavingId(event.id);
+    const next = !event.is_featured;
+    const { error } = await supabase
+      .from("events")
+      .update({ is_featured: next, updated_at: new Date().toISOString() })
+      .eq("id", event.id);
+
+    if (error) {
+      alert("精选状态更新失败：" + error.message);
+    } else {
+      setEvents((prev) =>
+        prev.map((item) =>
+          item.id === event.id ? { ...item, is_featured: next } : item
+        )
+      );
+    }
+    setFeaturedSavingId(null);
   }
 
   async function handleLogout() {
@@ -103,7 +127,24 @@ export default function AdminEventsPage() {
               <div className="md:col-span-2">
                 <StatusBadge status={event.status} />
               </div>
-              <div className="md:col-span-2 flex gap-2 justify-end">
+              <div className="md:col-span-2 flex flex-wrap gap-2 justify-end">
+                {isSuper && (
+                  <button
+                    onClick={() => handleToggleFeatured(event)}
+                    disabled={featuredSavingId === event.id}
+                    className={`text-sm transition-colors disabled:opacity-50 ${
+                      event.is_featured
+                        ? "text-yellow-400 hover:text-yellow-300"
+                        : "text-text-muted hover:text-yellow-300"
+                    }`}
+                  >
+                    {featuredSavingId === event.id
+                      ? "保存中"
+                      : event.is_featured
+                        ? "取消精选"
+                        : "设为精选"}
+                  </button>
+                )}
                 <Link
                   href={`/admin/events/${event.id}`}
                   className="text-sm text-neon-purple hover:text-neon-pink transition-colors"

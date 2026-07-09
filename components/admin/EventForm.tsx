@@ -70,14 +70,13 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
 
     const payload = {
       ...form,
-      created_by: userId,
       review_status: isSuper ? "approved" : "pending",
       updated_at: new Date().toISOString(),
     };
 
     const { error } = initialData
       ? await supabase.from("events").update(payload).eq("id", initialData.id)
-      : await supabase.from("events").insert(payload);
+      : await supabase.from("events").insert({ ...payload, created_by: userId });
 
     setLoading(false);
 
@@ -313,7 +312,13 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
       </FormField>
 
       {isSuper && (
-        <>
+        <div className="rounded-xl border border-bg-elevated bg-bg-card/60 p-4 space-y-4">
+          <div>
+            <h2 className="text-sm font-semibold">超管运营设置</h2>
+            <p className="text-xs text-text-muted mt-1">
+              首页轮播只展示已审核通过、状态为进行中的精选活动。
+            </p>
+          </div>
           <div className="flex flex-wrap gap-6">
             <label className="flex items-center gap-2 text-sm">
               <input
@@ -356,7 +361,7 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
               />
             </FormField>
           )}
-        </>
+        </div>
       )}
 
       <div className="flex gap-4 pt-4 flex-wrap">

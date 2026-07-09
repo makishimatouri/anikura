@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
-import { requireAdmin } from "@/lib/auth";
+import { getServerSupabase, requireAdmin } from "@/lib/auth";
 
 export default async function AdminPanelPage() {
   const session = await requireAdmin();
+  const supabase = await getServerSupabase();
   const { data: profile } = await supabase
     .from("profiles")
     .select("is_super_admin")

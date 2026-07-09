@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { requireAdmin } from "@/lib/auth";
+import { getServerSupabase, requireAdmin } from "@/lib/auth";
 import EventForm from "@/components/admin/EventForm";
 
 interface PageProps {
@@ -9,6 +8,7 @@ interface PageProps {
 
 export default async function EditEventPage({ params }: PageProps) {
   const session = await requireAdmin();
+  const supabase = await getServerSupabase();
   const { id } = await params;
 
   const { data: profile } = await supabase
