@@ -58,15 +58,15 @@ npm run check
 
 ## 版本留档
 
-正式版本从 `v0.1.0` 开始。每次上线前先确认构建通过，再提交、打 tag、推送：
+正式版本从 `v0.1.0` 开始。功能版本用 `v0.1.3` 这类编号，小 bugfix 用 `v0.1.31` 这类子修订号。每次上线前先确认构建通过，再提交、打 tag、推送：
 
 ```bash
 npm run check
 git add .
-git commit -m "release: v0.1.1"
-git tag -a v0.1.1 -m "v0.1.1"
+git commit -m "release: v0.1.31"
+git tag -a v0.1.31 -m "v0.1.31"
 git push origin main
-git push origin v0.1.1
+git push origin v0.1.31
 ```
 
 更多说明见 [版本管理](docs/VERSIONING.md) 和 [变更记录](CHANGELOG.md)。
