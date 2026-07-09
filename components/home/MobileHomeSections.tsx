@@ -84,6 +84,7 @@ export default function MobileHomeSections({
           sectionRefs.current[0] = node;
         }}
         title="ANIKURA CN"
+        titleClassName="bg-gradient-to-r from-neon-purple to-neon-pink bg-clip-text text-transparent"
         body="找活动、看厂牌、签到积分，都从这里进。"
         primaryHref="/events"
         primaryLabel="查看活动"
@@ -221,6 +222,7 @@ function MobilePanel({
   setRef,
   eyebrow,
   title,
+  titleClassName,
   body,
   primaryHref,
   primaryLabel,
@@ -233,6 +235,7 @@ function MobilePanel({
   setRef: (node: HTMLElement | null) => void;
   eyebrow?: string;
   title: string;
+  titleClassName?: string;
   body: string;
   primaryHref: string;
   primaryLabel: string;
@@ -257,7 +260,7 @@ function MobilePanel({
         {eyebrow && (
           <p className="text-xs font-medium tracking-[0.24em] text-neon-pink">{eyebrow}</p>
         )}
-        <h2 className={`${eyebrow ? "mt-3" : ""} max-w-[11ch] text-5xl font-bold leading-tight`}>
+        <h2 className={`${eyebrow ? "mt-3" : ""} max-w-[11ch] text-5xl font-bold leading-tight ${titleClassName ?? ""}`}>
           {title}
         </h2>
         <p className="mt-5 max-w-xs text-base leading-relaxed text-text-muted">{body}</p>
