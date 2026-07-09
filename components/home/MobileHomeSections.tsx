@@ -85,7 +85,7 @@ export default function MobileHomeSections({
         }}
         title="ANIKURA CN"
         titleClassName="bg-gradient-to-r from-neon-purple to-neon-pink bg-clip-text text-transparent"
-        body="找活动、看厂牌、签到积分，都从这里进。"
+        body="我们是全国最大的以ankr活动为核心的聚合信息站。"
         primaryHref="/events"
         primaryLabel="查看活动"
         secondaryHref="/anirox"
