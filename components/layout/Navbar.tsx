@@ -22,6 +22,7 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSuper, setIsSuper] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const isAniroxPage = pathname === "/anirox";
 
   useEffect(() => {
@@ -78,7 +79,9 @@ export default function Navbar() {
             </span>
           )}
         </Link>
-        <ul className="flex items-center gap-1 md:gap-4">
+
+        {/* 桌面端导航 */}
+        <ul className="hidden md:flex items-center gap-4">
           {NAV_LINKS.map((link) => (
             <li key={link.href}>
               <Link
@@ -114,7 +117,56 @@ export default function Navbar() {
             )}
           </li>
         </ul>
+
+        {/* 手机端汉堡按钮 */}
+        <button
+          className="md:hidden w-8 h-8 flex items-center justify-center text-text-muted"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="菜单"
+        >
+          {menuOpen ? "✕" : "☰"}
+        </button>
       </nav>
+
+      {/* 手机端展开菜单 */}
+      {menuOpen && (
+        <div className="md:hidden bg-bg-card border-t border-bg-elevated px-4 py-3 space-y-2">
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setMenuOpen(false)}
+              className={`block px-3 py-2 rounded-md text-sm ${
+                pathname === link.href
+                  ? "bg-neon-purple/20 text-neon-purple"
+                  : "text-text-muted hover:bg-bg-elevated"
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
+          <div className="pt-2 border-t border-bg-elevated flex flex-wrap gap-2">
+            {isAdmin && (
+              <Link href={isSuper ? "/admin/dashboard" : "/admin/panel"} className="text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-gray-700 to-gray-600 text-white">
+                后台
+              </Link>
+            )}
+            {user ? (
+              <>
+                <span className="text-xs text-text-muted w-full truncate">{user.email}</span>
+                <button onClick={handleLogout} className="text-xs px-3 py-1.5 rounded-full border border-bg-elevated text-text-muted">
+                  退出
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/auth/login" className="text-xs px-3 py-1.5 rounded-full border border-bg-elevated text-text-muted">登录</Link>
+                <Link href="/auth/signup" className="text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-neon-purple to-neon-pink text-white">注册</Link>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }
