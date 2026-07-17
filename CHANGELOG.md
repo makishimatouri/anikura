@@ -9,6 +9,7 @@
 - 新增根目录 `AGENTS.md`，规定 Agent 的读取顺序、安全边界、计算结果格式和交付报告格式
 - 新增项目状态、外部服务、方法、交接模板和维护规范文档
 - 重构 README、架构、部署、版本管理和维护说明，明确 Supabase、GoDaddy、Vercel、Cloudflare、GitHub 的职责边界
+- 新增 `docs/UPDATE_RULES.md`，明确文档分工、更新时机、PR 流程和 GitHub 交接方式
 - 记录当前线上探测结果、待确认事项和历史踩坑；本次没有修改业务代码、数据库、DNS 或部署配置
 
 ## v0.1.54 - 2026-07-09

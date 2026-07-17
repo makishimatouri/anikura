@@ -15,6 +15,7 @@
 | `docs/METHODS.md` | 筛选、日期、积分、图片、质量检查和报告格式等可复用方法 | 计算规则或验证标准变化时 |
 | `docs/VERSIONING.md` | Git 分支、tag、GitHub Release、变更记录和回滚规范 | 版本号或归档方式变化时 |
 | `docs/MAINTENANCE.md` | 日常、每周、发布前和事故后的维护清单 | 维护节奏或检查项目变化时 |
+| `docs/UPDATE_RULES.md` | 文档分工、更新时机、同步规则和 GitHub 交接流程 | 文档结构或长期更新流程变化时 |
 | `docs/HANDOFF_TEMPLATE.md` | 新对话的上下文提示模板 | 交接字段变化时 |
 | `CHANGELOG.md` | 用户可感知的版本变化 | 每次发布或明确的用户可见变更时 |
 
@@ -26,6 +27,7 @@ AGENTS.md
   -> docs/OPERATIONS.md（涉及线上服务时）
   -> docs/ARCHITECTURE.md（涉及代码时）
   -> docs/METHODS.md（涉及计算或数据时）
+  -> docs/UPDATE_RULES.md（涉及文档更新或交接时）
   -> docs/VERSIONING.md + docs/MAINTENANCE.md（涉及发布或归档时）
 ```
 
