@@ -34,6 +34,7 @@
 - `https://www.anikura.cn/robots.txt`：探测时返回 200。
 - `https://www.anikura.cn/sitemap.xml`：探测时返回 404，当前仍是明确待处理项。
 - Cloudflare 权威 Nameserver：`lakas.ns.cloudflare.com`、`hadlee.ns.cloudflare.com`。
+- 生产 Supabase REST 只读探测（经本机代理、仅使用本地 anon key，不输出 key）：查询 `events.header_image_url` 返回成功，确认生产 schema 当前存在该列；这不能证明 migration 执行时间、备份记录或管理员上传流程已完成。
 
 这些结果是某个时间点的可用性快照，不代表以后每次都无需复核。
 
@@ -50,7 +51,7 @@
 
 - 活动主海报和可选横向头图使用 Supabase Storage 的 `posters` bucket；当前上传代码按 `posters/` 和 `headers/` 两个前缀存放。
 - 活动详情页保留海报完整比例；横向卡片优先使用 `header_image_url`，没有时回退到 `poster_url`。
-- `supabase/migrations/20260709_add_event_header_image.sql` 已纳入仓库，但该 migration 是否已经在生产 Supabase 项目执行，需要在控制台确认。
+- `supabase/migrations/20260709_add_event_header_image.sql` 已纳入仓库；本轮只读探测确认生产 schema 当前存在 `header_image_url` 列，但 migration 执行时间、备份记录和管理员端到端上传验证仍需确认。
 
 ### 仓库和版本
 
@@ -65,7 +66,7 @@
 
 ### 优先级较高
 
-1. **确认生产数据库 migration 状态**：代码依赖 `events.header_image_url`。在 Supabase SQL Editor 查询列是否存在；如果不存在，先备份，再执行仓库 SQL，最后用管理员表单验证上传和保存。不要直接在文档中把“文件存在”写成“线上已执行”。
+1. **补齐生产 migration 记录与端到端验证**：当前只读探测已确认 `events.header_image_url` 列存在；仍需在 Supabase 控制台确认 migration 执行时间和备份记录，并用管理员表单验证头图上传、保存和重新打开。不要把“字段存在”写成“migration 执行记录完整”。
 2. **处理 `sitemap.xml` 404**：若网站需要搜索引擎收录，应补充 Next.js sitemap route 或静态文件，并在预览和生产分别验证；这属于代码发布，不在本轮文档改造中直接处理。
 3. **确认生产 Vercel 环境变量**：至少核对 URL、anon key、service role key 是否分别配置在正确环境；不要把值复制到仓库或聊天。
 
