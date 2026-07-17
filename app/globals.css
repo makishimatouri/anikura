@@ -29,6 +29,7 @@
 .marquee-track {
   display: flex;
   width: max-content;
+  height: 100%;
   animation: marquee-x var(--marquee-duration, 70s) linear infinite;
 }
 .marquee-reverse .marquee-track { animation-direction: reverse; }
@@ -131,4 +132,54 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
+}
+
+/* ===== Phase 2 首页 ===== */
+/* Hero 字母内海报带缓慢平移 */
+@keyframes hero-pan {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-70px); }
+}
+.hero-band { animation: hero-pan 22s ease-in-out infinite alternate; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-band { animation: none; }
+}
+
+/* Hero 底部箭头浮动 */
+@keyframes bob-y {
+  50% { transform: translate(-50%, 8px); }
+}
+.hero-arrow { animation: bob-y 1.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-arrow { animation: none; }
+}
+
+/* 海报墙行：边缘渐隐 + 悬停信息板 */
+.wall-row {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.wall-tile-img {
+  height: 100%;
+  width: auto;
+  display: block;
+  filter: brightness(.78) saturate(.92);
+  transition: filter .35s ease;
+}
+.wall-tile:hover .wall-tile-img { filter: brightness(1.05) saturate(1.05); }
+.wall-plate {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  background: rgba(8,8,12,.88);
+  backdrop-filter: blur(4px);
+  border-top: 1px solid rgba(168,85,247,.35);
+  padding: 10px 12px;
+  transform: translateY(101%);
+  transition: transform .32s cubic-bezier(.6,0,.2,1);
+}
+.wall-tile:hover .wall-plate,
+.wall-tile:focus-visible .wall-plate { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .wall-plate { transition: none; }
+  .wall-tile-img { transition: none; }
 }

@@ -1,22 +1,33 @@
-import HeroSection from "@/components/home/HeroSection";
+import HeroCollage from "@/components/home/HeroCollage";
+import PosterWall from "@/components/home/PosterWall";
 import RandomRecommendation from "@/components/home/RandomRecommendation";
 import FeaturedEvents from "@/components/home/FeaturedEvents";
-import MobileHomeSections from "@/components/home/MobileHomeSections";
-import { getRecommendationEvents } from "@/lib/queries";
+import {
+  getLatestApprovedEvent,
+  getRecommendationEvents,
+  getWallEvents,
+} from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const recommendationEvents = await getRecommendationEvents();
+  const [latestEvent, wallEvents, recommendationEvents] = await Promise.all([
+    getLatestApprovedEvent(),
+    getWallEvents(),
+    getRecommendationEvents(),
+  ]);
+
+  const heroPosters = wallEvents
+    .map((e) => e.poster_url)
+    .filter((u): u is string => !!u)
+    .slice(0, 4);
 
   return (
     <>
-      <MobileHomeSections recommendationEvents={recommendationEvents} />
-      <div className="hidden md:block">
-        <HeroSection />
-        <RandomRecommendation events={recommendationEvents} />
-        <FeaturedEvents />
-      </div>
+      <HeroCollage posters={heroPosters} latest={latestEvent} />
+      <PosterWall events={wallEvents} />
+      <FeaturedEvents />
+      <RandomRecommendation events={recommendationEvents} />
     </>
   );
 }
