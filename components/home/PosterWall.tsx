@@ -102,9 +102,9 @@ export default function PosterWall({ events, posters }: PosterWallProps) {
   });
 
   return (
-    <section aria-label="活动海报墙" className="flex flex-col md:h-[calc(100svh-3.5rem)] md:min-h-[560px]">
+    <section aria-label="活动海报墙" className="flex h-full flex-col">
       {rows.map((tiles, row) => (
-        <div key={row} className="wall-row h-[60vw] overflow-hidden md:h-auto md:flex-1">
+        <div key={row} className="wall-row flex-1 overflow-hidden">
           <Marquee duration={ROW_DURATION[row]} reverse={row === 1}>
             {tiles.map((tile, i) => {
               const key = `${row}-${i}`;
