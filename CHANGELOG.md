@@ -2,14 +2,26 @@
 
 本项目从 `v0.1.0` 开始按正式版本留档。所有上线版本都应有 Git tag，并在本文件记录用户可见变化。
 
-## Unreleased
+## v0.2.0 - 2026-07-17
 
-前端重构 Phase 0（地基，无外观变化）：
+前端重构 Phase 0 + Phase 1（TIS 风全局骨架上线，页面内容区暂保持原样）。
+
+Phase 0（地基，无外观变化）：
 
 - 新增自托管字体 `public/fonts/`（Anton 400、Oswald 可变字重），`@font-face` 挂载，不经过外部 CDN
 - `globals.css` 新增设计 token（--font-display / --font-en）、无缝跑马灯和滚动淡入基础样式，均适配 prefers-reduced-motion
 - 新增基础组件 `components/ui/Marquee.tsx`（无限横向滚动）和 `components/ui/Reveal.tsx`（进入视口淡入），暂未接入任何页面
 - 存档 tag `archive/pre-redesign-20260717` 指向 main b45169a；重构设计定稿文档暂存仓库外，后续阶段迁入 docs/
+
+Phase 1（全局骨架）：
+
+- 顶栏重构为极简固定栏：仅左侧 Anton 站名（/anirox 页为厂牌 logo）+ 右侧汉堡按钮，原 8 链接横排导航移除
+- 新增右侧抽屉菜单（TIS 风）：英文大字（Anton）+ 中文小字 + 细线分隔，当前路由紫色高亮，AniROX 项紫粉渐变，登录/注册/退出与后台入口收进抽屉底部，支持 Esc 关闭、路由变化自动收起、打开时锁定页面滚动
+- 页脚改为居中极简：Anton 站名 + 四个小链接 + 版权行
+- 新增首次进入加载遮罩（黑底站名淡出，同一会话只出现一次）
+- 新增页面进入转场（template.tsx，淡入上移 0.5s）
+- 全站底色压黑至 #08080c、面板 #0e0e14，叠加极淡噪点纹理
+- 动效均适配 prefers-reduced-motion
 
 维护文档交接体系重建中。
 
