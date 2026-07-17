@@ -13,6 +13,7 @@
 - 精选推荐保留并换章节标题样式（FEATURED），「换一个」功能不变
 - 新增通用章节标题组件 SectionHead；MobileHomeSections 与旧 HeroSection 退役，首页统一为响应式单实现
 - 修复 Marquee 轨道高度塌陷（track 缺 height:100% 导致磁贴按原图高度渲染）
+- 海报墙素材接入：新建 Supabase 公开桶 wall-posters，导入东离提供的 58 张国内 anikura 活动海报（最长边 900 压缩）；服务端用 service role 列目录（新桶无公开 list 策略），文件公开可读；Hero 字母拼贴从素材桶均匀抽取 4 张
 - 动效均适配 prefers-reduced-motion
 
 ## v0.2.0 - 2026-07-17
