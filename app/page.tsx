@@ -19,14 +19,6 @@ export default async function HomePage() {
     getRecommendationEvents(),
   ]);
 
-  // Hero 字母拼贴：从海报墙素材里均匀抽 4 张，保证色彩风格打散
-  const heroSource = wallPosters.length > 0
-    ? wallPosters
-    : wallEvents.map((e) => e.poster_url).filter((u): u is string => !!u);
-  const heroPosters = heroSource.length <= 4
-    ? heroSource
-    : [0, 1, 2, 3].map((i) => heroSource[Math.floor((i * heroSource.length) / 4)]);
-
   const hasWall = wallPosters.length + wallEvents.filter((e) => e.poster_url).length > 0;
 
   return (
@@ -38,13 +30,13 @@ export default async function HomePage() {
           <div className="sticky top-14 z-0 h-[calc(100svh-3.5rem)]">
             <PosterWall events={wallEvents} posters={wallPosters} />
           </div>
-          <div className="relative z-10 -mt-[calc(100svh-3.5rem)] bg-bg">
-            <HeroCollage posters={heroPosters} latest={latestEvent} />
+          <div className="relative z-10 -mt-[calc(100svh-3.5rem)]">
+            <HeroCollage latest={latestEvent} />
           </div>
           <div aria-hidden="true" className="h-[calc(100svh-3.5rem)]" />
         </div>
       ) : (
-        <HeroCollage posters={heroPosters} latest={latestEvent} />
+        <HeroCollage latest={latestEvent} />
       )}
       <FeaturedEvents />
       <RandomRecommendation events={recommendationEvents} />
