@@ -73,6 +73,7 @@ npm run check
 - [可复用方法](docs/METHODS.md)：筛选、日期、积分、图片和检查结果
 - [版本管理](docs/VERSIONING.md)：分支、tag、Release、变更记录和归档
 - [维护清单](docs/MAINTENANCE.md)：日常、每周、发布前和事故处理
+- [更新规范](docs/UPDATE_RULES.md)：文档分工、更新时机、PR 和 GitHub 归档流程
 - [新对话交接模板](docs/HANDOFF_TEMPLATE.md)
 - [变更记录](CHANGELOG.md)
 

@@ -8,7 +8,7 @@
 
 1. `git rev-parse --show-toplevel`、`git status --short --branch`、`git remote -v`，确认当前确实在 cnanikura 仓库。
 2. `AGENTS.md`、`docs/INDEX.md`、`docs/PROJECT_GUIDE.md`。
-3. 与任务直接相关的 `docs/ARCHITECTURE.md`、`docs/OPERATIONS.md`、`docs/DEPLOYMENT.md`、`docs/METHODS.md`、`docs/VERSIONING.md`、`docs/MAINTENANCE.md`。
+3. 与任务直接相关的 `docs/ARCHITECTURE.md`、`docs/OPERATIONS.md`、`docs/DEPLOYMENT.md`、`docs/METHODS.md`、`docs/VERSIONING.md`、`docs/MAINTENANCE.md`、`docs/UPDATE_RULES.md`。
 4. `README.md`、`CHANGELOG.md`、相关源码和 Supabase migration。
 
 旧会话、记忆、截图和聊天中的路径只能作为线索。当前文件、当前 Git 状态和本轮用户要求优先。如果仓库位置、版本号、线上状态或文档互相矛盾，先指出矛盾，再以当前证据为准。
@@ -77,7 +77,7 @@
 
 ## 6. 变更和交接习惯
 
-先看 `git status`，保留用户已有修改；不要覆盖与本轮任务无关的改动。文档变化要同步更新索引或 README；用户可见变化要同步 `CHANGELOG.md`。每次交付都给出下一位 Agent 可以直接执行的最短入口，例如：
+先看 `git status`，保留用户已有修改；不要覆盖与本轮任务无关的改动。文档更新按 `docs/UPDATE_RULES.md` 分工，新增或改名文件要同步索引或 README；用户可见变化要同步 `CHANGELOG.md`。每次交付都给出下一位 Agent 可以直接执行的最短入口，例如：
 
 ```text
 先读 AGENTS.md、docs/PROJECT_GUIDE.md、docs/OPERATIONS.md。
