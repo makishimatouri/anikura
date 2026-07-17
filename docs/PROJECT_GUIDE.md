@@ -12,7 +12,7 @@
 | 远端协议 | SSH：`git@github.com:makishimatouri/anikura.git` |
 | 默认分支 | `main` |
 | 当前代码版本 | `package.json` 为 `0.1.54`；正式产品 tag 仍为 `v0.1.54`，其后 `main` 增加了文档合并提交 |
-| 当前主线提交 | `dacb790`，包含 PR #1 文档体系和 PR #2 更新规范 |
+| 当前主线状态 | `main` 已包含 PR #1、PR #2、PR #3 的文档提交；具体 HEAD 以 `git log --oneline -1` 为准 |
 | 技术栈 | Next.js 16 App Router、React 19、TypeScript、Tailwind CSS 4、Supabase |
 | 线上域名 | `anikura.cn`、`www.anikura.cn` |
 | 线上链路 | GoDaddy 注册域名，Cloudflare 提供权威 DNS/CDN/TLS，Vercel 承载应用，Supabase 承载数据、认证和图片存储 |
@@ -58,7 +58,7 @@
 - `v0.1.1` 是仓库文档、检查和协作规范化版本。
 - `v0.1.2` 至 `v0.1.54` 保留了功能、移动端和文案调整历史。
 - `v0.3.0` 仍保留在 Git 历史中，但属于开发阶段误命名，不是正式版本线。
-- PR #1 建立基础维护文档，PR #2 建立长期文档更新规范；两者都是文档提交，不改变正式产品版本号。
+- PR #1 建立基础维护文档，PR #2 建立长期文档更新规范，PR #3 修正状态快照；这些都是文档提交，不改变正式产品版本号。
 - `.github/workflows/ci.yml` 当前在 `main` 的 push 和 PR 上执行 `typecheck`、`lint`；本地发布门禁 `npm run check` 还包括 build，二者不要混为一谈。
 
 ## 当前待确认和待处理
