@@ -1,5 +1,56 @@
 @import "tailwindcss";
 
+/* ===== 重构设计系统（Phase 0 地基，暂不接页面） ===== */
+@font-face {
+  font-family: "Anton";
+  src: url("/fonts/anton-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Oswald";
+  src: url("/fonts/oswald-var.woff2") format("woff2");
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-display: "Anton", "PingFang SC", sans-serif;
+  --font-en: "Oswald", "PingFang SC", sans-serif;
+}
+
+/* 跑马灯：track 内放两份相同内容，平移一半实现无缝循环 */
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-x var(--marquee-duration, 70s) linear infinite;
+}
+.marquee-reverse .marquee-track { animation-direction: reverse; }
+.marquee-pause-hover:hover .marquee-track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+}
+
+/* 滚动淡入：Reveal 组件进入视口时加 .reveal-on */
+.reveal-base {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity .8s ease, transform .8s ease;
+}
+.reveal-on {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-base { opacity: 1; transform: none; transition: none; }
+}
+
 @theme {
   --color-bg: #0d0d12;
   --color-bg-card: #16161f;

@@ -4,6 +4,13 @@
 
 ## Unreleased
 
+前端重构 Phase 0（地基，无外观变化）：
+
+- 新增自托管字体 `public/fonts/`（Anton 400、Oswald 可变字重），`@font-face` 挂载，不经过外部 CDN
+- `globals.css` 新增设计 token（--font-display / --font-en）、无缝跑马灯和滚动淡入基础样式，均适配 prefers-reduced-motion
+- 新增基础组件 `components/ui/Marquee.tsx`（无限横向滚动）和 `components/ui/Reveal.tsx`（进入视口淡入），暂未接入任何页面
+- 存档 tag `archive/pre-redesign-20260717` 指向 main b45169a；重构设计定稿文档暂存仓库外，后续阶段迁入 docs/
+
 维护文档交接体系重建中。
 
 - 新增根目录 `AGENTS.md`，规定 Agent 的读取顺序、安全边界、计算结果格式和交付报告格式
