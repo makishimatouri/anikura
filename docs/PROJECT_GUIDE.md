@@ -20,7 +20,7 @@
 
 ### 本地仓库
 
-- 文档改造开始前，`main` 与 `origin/main` 一致，工作区没有未提交业务代码改动；本轮新增和修改的文档属于当前待提交变更。
+- 文档改造开始前，`main` 与 `origin/main` 一致，工作区没有未提交业务代码改动；本轮文档已提交在 `codex/docs-handoff`，`main` 未修改。
 - `npm run check`：通过。
   - `typecheck`：通过。
   - `lint`：0 个 error，2 个 `<img>` 性能 warning。
