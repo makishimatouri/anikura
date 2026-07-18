@@ -16,6 +16,8 @@ export interface Event {
   end_time: string | null;
   city: string;
   venue: string;
+  /** 具体地址（场地名为 venue，门牌地址单列） */
+  address?: string | null;
   tags: EventTag[];
   header_image_url: string | null;
   poster_url: string | null;

@@ -65,6 +65,7 @@ export default async function EventDetailPage({ params }: PageProps) {
         )}
         <InfoItem label="城市" value={event.city} icon="📍" />
         <InfoItem label="场地" value={event.venue} icon="🏟️" />
+        {event.address && <InfoItem label="详细地址" value={event.address} icon="🗺️" />}
         {event.ticket_price && <InfoItem label="票价" value={event.ticket_price} icon="🎫" />}
         {event.organizer && <InfoItem label="主办方" value={event.organizer} icon="👤" />}
       </div>

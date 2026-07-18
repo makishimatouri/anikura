@@ -37,6 +37,7 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
     end_time: initialData?.end_time ?? "",
     city: initialData?.city ?? "",
     venue: initialData?.venue ?? "",
+    address: initialData?.address ?? "",
     tags: initialData?.tags ?? [] as EventTag[],
     header_image_url: initialData?.header_image_url ?? "",
     poster_url: initialData?.poster_url ?? "",
@@ -235,6 +236,15 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
             onChange={(e) => update("venue", e.target.value)}
             className="form-input"
             placeholder="MAO Livehouse"
+          />
+        </FormField>
+        <FormField label="具体地址">
+          <input
+            type="text"
+            value={form.address}
+            onChange={(e) => update("address", e.target.value)}
+            className="form-input"
+            placeholder="逸仙路1328号3号楼（选填）"
           />
         </FormField>
       </div>
