@@ -108,3 +108,19 @@ alter table events add column if not exists review_note text;
 4. 非超管编辑已通过活动 → 回落 pending 暂时下线：接受 ✓
 5. /events 归档视图：做 ✓（东离细化：以"过往活动"选项并入时间筛选器，选中显示 status=ended 活动按日期倒序，城市/类型筛选照常生效）
 6. 执行顺序 E0 → E4：OK ✓
+
+## 12. 执行进度（2026-07-18 执行 session 记录）
+
+- E0 完成：events 快照导出至仓库外备份目录（`backups/20260718-bulk-import/events-snapshot-20260718.json`）；
+  git tag `archive/pre-bulk-import-20260718` 已打；迁移 SQL 写入 `supabase/migrations/20260718_event_import_review_columns.sql`，
+  但本机无 DDL 通道（无 supabase CLI / access token / DB 密码，PostgREST 不支持 DDL），需东离在 SQL Editor 执行
+- E1 完成：58 张全部 AI 识读。结果 45 条活动 + 13 张跳过（4 张完全重复：wall-31/32/48/58；
+  8 张同活动合并版：wall-06/07/27/28/29/36/47/56；1 张库内已有：wall-41 ヲ册那）。
+  产物：`backups/20260718-bulk-import/reading.jsonl`、`import-report.json`、`summary.md`
+- E2 就绪：`scripts/import/e2-import.mjs --dry-run` 已验证（含批次防重复、迁移缺失检测）；待东离过目报告 + 执行迁移后正式跑
+- E3 完成：/admin/events 审核页签+批次过滤+缩略图+待确认 badge+超管批量通过；编辑页并排审阅（左图右表单）；
+  非超管编辑已通过活动回落 pending 并经 /api/notify-supers 通知超管；驳回原因存 review_note（EventForm + dashboard）
+- E4 完成：PosterWall 改为仅 getWallEvents（limit 60），getWallPosters 删除；
+  /events 月份筛选新增「过往活动」（month=past，status=ended 按日期倒序，城市/类型照常生效）
+- 验证：`npm run check` 通过；本地 dev 冒烟 /、/events、/events?month=past 均 200，海报墙正常渲染
+- 代码已提交到 codex/redesign-phase2（未推送；推送 main 会触发生产部署，待东离发话）

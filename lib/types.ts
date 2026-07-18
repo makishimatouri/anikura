@@ -29,6 +29,12 @@ export interface Event {
   has_lottery: boolean;
   lottery_points_cost: number;
   review_status: string | null;
+  /** 批量导入批次号（手动创建为 null） */
+  import_batch?: string | null;
+  /** 来源：manual 手动创建 / bulk-import 批量导入 */
+  source?: string | null;
+  /** 超管驳回时填写的备注 */
+  review_note?: string | null;
   qq_group: string | null;
   qq_group_name: string | null;
   created_at: string;

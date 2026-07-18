@@ -19,6 +19,7 @@ const MONTHS = [
   { value: "2026-10", label: "2026年10月" },
   { value: "2026-11", label: "2026年11月" },
   { value: "2026-12", label: "2026年12月" },
+  { value: "past", label: "过往活动" },
 ];
 
 export default function EventFilter() {

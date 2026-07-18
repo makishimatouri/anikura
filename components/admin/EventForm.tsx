@@ -122,6 +122,23 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
       return;
     }
 
+    // 非超管编辑「已通过」活动：保存后已回落 pending 暂时下线，通知所有超管复核
+    if (initialData && !isSuper && initialData.review_status === "approved") {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+        if (token) {
+          await fetch("/api/notify-supers", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ eventId: initialData.id, title: form.title }),
+          });
+        }
+      } catch {
+        // 通知失败不阻塞保存流程
+      }
+    }
+
     const redirectTo = isSuper ? "/admin/dashboard" : "/admin/panel";
     router.push(redirectTo);
     router.refresh();
@@ -130,6 +147,11 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {error && <p className="text-red-400 text-sm bg-red-500/10 p-3 rounded-lg">{error}</p>}
+      {initialData && !isSuper && initialData.review_status === "approved" && (
+        <p className="text-yellow-400 text-sm bg-yellow-500/10 p-3 rounded-lg">
+          该活动当前已通过审核。你保存修改后，活动会回到待审核状态并暂时从公开区下线，等待超管复核。
+        </p>
+      )}
 
       <FormField label="活动名称" required>
         <input
@@ -420,8 +442,12 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
             <button
               type="button"
               onClick={async () => {
-                if (!confirm("确认拒绝该活动？")) return;
-                await supabase.from("events").update({ review_status: "rejected" }).eq("id", initialData.id);
+                const reason = prompt("驳回原因（可选，将记录到审核备注）：");
+                if (reason === null) return;
+                await supabase
+                  .from("events")
+                  .update({ review_status: "rejected", review_note: reason || null })
+                  .eq("id", initialData.id);
                 router.push("/admin/dashboard");
                 router.refresh();
               }}

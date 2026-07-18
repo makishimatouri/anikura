@@ -92,8 +92,8 @@ export async function getLatestApprovedEvent(): Promise<Event | null> {
   return data;
 }
 
-/** 首页海报墙：有海报的已审核活动（不限是否进行中，未来海报文件夹接入前先用库里素材） */
-export async function getWallEvents(limit = 12): Promise<Event[]> {
+/** 首页海报墙唯一数据源：有海报的已审核活动（不限 status；素材桶已退役，仅作备份） */
+export async function getWallEvents(limit = 60): Promise<Event[]> {
   const { data, error } = await supabase
     .from("events")
     .select("*")
@@ -104,34 +104,4 @@ export async function getWallEvents(limit = 12): Promise<Event[]> {
 
   if (error) return [];
   return data ?? [];
-}
-
-/**
- * 首页海报墙素材：wall-posters 公开桶内的海报 URL（东离提供的国内 anikura 海报集）。
- * 新桶没有公开 list 策略（anon 列目录返回空），服务端用 service role 列举；
- * 文件本身公开可读，key 不下发客户端。
- */
-export async function getWallPosters(): Promise<string[]> {
-  const base = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/wall-posters`;
-  const apikey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/list/wall-posters`,
-    {
-      method: "POST",
-      headers: {
-        apikey,
-        Authorization: `Bearer ${apikey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ limit: 200, prefix: "", sortBy: { column: "name", order: "asc" } }),
-      next: { revalidate: 3600 },
-    }
-  );
-  if (!res.ok) return [];
-  const files = (await res.json()) as { name: string }[];
-  return files
-    .map((f) => f.name)
-    .filter((n) => /\.(jpe?g|png|webp)$/i.test(n))
-    .map((n) => `${base}/${n}`);
 }

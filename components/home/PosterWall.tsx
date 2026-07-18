@@ -3,10 +3,8 @@ import Marquee from "@/components/ui/Marquee";
 import { Event } from "@/lib/types";
 
 interface PosterWallProps {
-  /** 库内活动（带海报，磁贴链接到详情并有信息板） */
+  /** 库内活动（带海报，磁贴链接到详情并有信息板）；海报墙唯一数据源 */
   events: Event[];
-  /** 海报墙素材桶 URL（纯展示，链接到活动列表） */
-  posters: string[];
 }
 
 const ROW_DURATION = [66, 80, 72];
@@ -44,19 +42,6 @@ function EventTile({ event }: { event: Event }) {
   );
 }
 
-function PosterImgTile({ url, index }: { url: string; index: number }) {
-  return (
-    <Link
-      href="/events"
-      className="wall-tile relative block h-full flex-none overflow-hidden"
-      aria-label={`查看全部活动（海报 ${index + 1}）`}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={url} alt="" loading="lazy" className="wall-tile-img" />
-    </Link>
-  );
-}
-
 function PlaceholderTile({ index }: { index: number }) {
   return (
     <Link
@@ -77,20 +62,16 @@ function PlaceholderTile({ index }: { index: number }) {
   );
 }
 
-type Tile =
-  | { kind: "event"; event: Event }
-  | { kind: "poster"; url: string }
-  | { kind: "placeholder" };
+type Tile = { kind: "event"; event: Event } | { kind: "placeholder" };
 
 /**
  * 首页招牌：三行无限滚动海报墙。
  * 真实活动海报原比例展示（不裁切），素材不足时用品牌占位符补齐。
  */
-export default function PosterWall({ events, posters }: PosterWallProps) {
-  const pool: Tile[] = [
-    ...events.filter((e) => e.poster_url).map((event) => ({ kind: "event", event }) as Tile),
-    ...posters.map((url) => ({ kind: "poster", url }) as Tile),
-  ];
+export default function PosterWall({ events }: PosterWallProps) {
+  const pool: Tile[] = events
+    .filter((e) => e.poster_url)
+    .map((event) => ({ kind: "event", event }) as Tile);
 
   if (pool.length === 0) return null;
 
@@ -109,7 +90,6 @@ export default function PosterWall({ events, posters }: PosterWallProps) {
             {tiles.map((tile, i) => {
               const key = `${row}-${i}`;
               if (tile.kind === "event") return <EventTile key={key} event={tile.event} />;
-              if (tile.kind === "poster") return <PosterImgTile key={key} url={tile.url} index={i} />;
               return <PlaceholderTile key={key} index={row * TILES_PER_ROW + i} />;
             })}
           </Marquee>
