@@ -90,7 +90,16 @@ alter table events add column if not exists review_note text;
 - 导入脚本支持 --dry-run：先出完整清单不落库
 - 出错回滚：delete from events where import_batch='2026-07-folder-58' 一条 SQL 清批
 
-## 10. 待东离拍板
+## 10. 已查证落实的点（2026-07-18 补充）
+
+- notifications 表结构已确认：id / user_id / type / title / message / reference_id / is_read / created_at，
+  已有 event_rejected 类型在用；非超管提交审核的通知可复用此结构（新 type 如 event_review_needed）
+- 58 张素材 MD5 精确去重：无完全重复文件；近似重复（同系列活动不同场次）在 AI 识读时目检区分
+- AI 识读样例（两张，验证可行）：
+  - wall-04：ANIPULSE Vol.1 in NANJING / 2026-07-04 14:00 / 南京 / 集庆舞蹈文化艺术工作室（秦淮区江苏通信大厦泽天大酒店6F）/ 预售39R 现场49R / DJ 阵容完整可读 / 主办待补充
+  - wall-06：肉？フェス！in NANJING / 日期海报未印（待补充，演示了占位流程）/ 南京 / 户外场地（名称待补充）/ 完整 timetable 可读（14:00-20:00 七组 DJ）/ 御宅艺OK 光害大欢迎等描述完整
+
+## 11. 待东离拍板
 
 1. 归档位置：posters 桶 import-202607/ 目录（推荐）vs 直接引用 wall-posters 现有 URL
 2. 识读方式：AI 视觉逐张（推荐）vs Vision OCR
