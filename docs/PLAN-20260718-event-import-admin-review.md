@@ -99,11 +99,11 @@ alter table events add column if not exists review_note text;
   - wall-04：ANIPULSE Vol.1 in NANJING / 2026-07-04 14:00 / 南京 / 集庆舞蹈文化艺术工作室（秦淮区江苏通信大厦泽天大酒店6F）/ 预售39R 现场49R / DJ 阵容完整可读 / 主办待补充
   - wall-06：肉？フェス！in NANJING / 日期海报未印（待补充，演示了占位流程）/ 南京 / 户外场地（名称待补充）/ 完整 timetable 可读（14:00-20:00 七组 DJ）/ 御宅艺OK 光害大欢迎等描述完整
 
-## 11. 待东离拍板
+## 11. 东离决策（2026-07-18）
 
-1. 归档位置：posters 桶 import-202607/ 目录（推荐）vs 直接引用 wall-posters 现有 URL
-2. 识读方式：AI 视觉逐张（推荐）vs Vision OCR
-3. 同名系列活动按场次保留（推荐）vs 只留一场
-4. 非超管编辑已通过活动 → 回落 pending 导致暂时下线，接受（推荐）vs 不做限制
-5. /events 归档视图做不做（推荐做）
-6. 执行顺序 E0 备份迁移 → E1 识读报告 → 东离过目 → E2 落库 → E3 后台 UI → E4 墙切换，OK 吗
+1. 归档位置：待确认（已解释：A=复制到 posters 桶 import-202607/，语义干净，推荐；B=直接引用 wall-posters 现有 URL，零冗余但语义错位）
+2. 识读方式：待确认（已报成本：AI 视觉约 100~150k token 一次性，可压图降至 ~100k；对比人工录入 3~5 小时；Vision OCR 零成本但漫展字体识别差）
+3. 同名系列活动：全保留 ✓
+4. 非超管编辑已通过活动 → 回落 pending 暂时下线：接受 ✓
+5. /events 归档视图：做 ✓
+6. 执行顺序 E0 → E4：OK ✓
