@@ -136,3 +136,9 @@ npm run check：
 Vercel Deployment：
 回滚点：
 ```
+
+## 本地归档
+
+每个正式 tag 和重要节点，除 GitHub tag/Release 外，还需用 `git archive` 导出 tar 包到本机归档目录
+（目录位置见内部维护文档，不写进本仓库）。内部维护文档与说明书存放在独立的私有仓库，
+公开仓库文档不得包含本地绝对路径、账号 ID、个人邮箱和任何密钥值。
