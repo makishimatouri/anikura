@@ -1,7 +1,7 @@
 // E2：归档上传 posters 桶 + 批量 insert（review_status=pending）
 // 用法：node scripts/import/e2-import.mjs [--dry-run] [--force]
 // 安全：默认先查批次是否已存在，存在即中止（--force 跳过）
-import { adminClient } from "./db.mjs";
+import { adminClient, SUPABASE_URL } from "./db.mjs";
 import { readFileSync } from "node:fs";
 
 const OUT = "/Users/edy/Documents/cnanikura网站/backups/20260718-bulk-import";
@@ -38,7 +38,7 @@ let uploaded = 0, inserted = 0;
 const failures = [];
 for (const e of report.events) {
   const key = e.archive_path; // posters/YYYY-MM/... 或 posters/past/...
-  const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""}/storage/v1/object/public/posters/${encodeURI(key)}`;
+  const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/posters/${encodeURI(key)}`;
 
   if (DRY) {
     console.log(`- ${e.file} -> ${key}\n  「${e.title}」${e.date} ${e.city} ${e.status} AX=${e.is_anirox}`);
@@ -71,7 +71,7 @@ for (const e of report.events) {
       continue;
     }
     uploaded++;
-    extraUrls.push(`${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""}/storage/v1/object/public/posters/${encodeURI(x.archive_path)}`);
+    extraUrls.push(`${SUPABASE_URL}/storage/v1/object/public/posters/${encodeURI(x.archive_path)}`);
   }
 
   // 2. 插入

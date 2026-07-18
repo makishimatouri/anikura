@@ -26,19 +26,27 @@ for (const r of lines) {
   (main.merged_from ??= []).push({ file: r.file, note: r.dup_note });
 }
 
-function slug(s, fallback) {
-  // 保留中日韩文字与字母数字，其余折成 -；决策要求文件名带城市+活动名
-  const clean = (s || "").replace(/[^\u4e00-\u9fff\u3040-\u30ffA-Za-z0-9.]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48);
-  return clean || fallback;
+// Supabase Storage key 仅支持 ASCII（CJK 会 Invalid key），城市用拼音映射，活动名取 ASCII 部分，兜底 wall 编号
+const CITY_PINYIN = {
+  "成都": "chengdu", "南京": "nanjing", "上海": "shanghai", "广州": "guangzhou",
+  "深圳": "shenzhen", "重庆": "chongqing", "武汉": "wuhan", "西安": "xian",
+  "福州": "fuzhou", "天津": "tianjin", "大连": "dalian", "长春": "changchun",
+  "南昌": "nanchang", "济南": "jinan", "厦门": "xiamen", "昆山": "kunshan",
+  "无锡": "wuxi",
+};
+function slug(s) {
+  return (s || "").replace(/[^A-Za-z0-9.]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
 }
 function archivePath(e) {
-  let cityPart = "城市待补充";
-  if (e.city && e.city !== "其他") cityPart = e.city;
+  let cityCn = null;
+  if (e.city && e.city !== "其他") cityCn = e.city;
   else if (e.city === "其他" && e.city_note) {
-    const m = e.city_note.match(/^(\u96c4\u9e6f|[\u4e00-\u9fff]{2,3}?)（/);
-    if (m) cityPart = m[1];
+    const m = e.city_note.match(/^([\u4e00-\u9fff]{2,3}?)（/);
+    if (m) cityCn = m[1];
   }
-  const name = `${cityPart}-${slug(e.title, e.file)}.jpg`.replace(/[\/\\?%*:|"<>]/g, "-");
+  const cityPart = (cityCn && CITY_PINYIN[cityCn]) || "unknown";
+  const slugPart = slug(e.title);
+  const name = slugPart ? `${cityPart}-${e.file}-${slugPart}.jpg` : `${cityPart}-${e.file}.jpg`;
   if (e.date >= "2026-07-01") return `posters/${e.date.slice(0, 7)}/${name}`;
   return `posters/past/${name}`;
 }
