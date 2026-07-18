@@ -6,7 +6,7 @@
 -- 不动：auth_insert（登录用户投稿路径）。
 
 -- 1. 匿名读：仅已通过的活动（原 public 策略删除后拆成 anon / authenticated 两条）
-DROP POLICY anon_read ON public.events;
+DROP POLICY "anon_read ON events" ON public.events;
 CREATE POLICY anon_read ON public.events
   FOR SELECT TO anon
   USING (review_status = 'approved');
@@ -24,7 +24,7 @@ CREATE POLICY auth_read ON public.events
   );
 
 -- 3. 更新/删除：仅管理员（代码里只有后台页面用这两个操作，已核对无普通用户路径）
-DROP POLICY auth_update ON public.events;
+DROP POLICY "auth_update ON events" ON public.events;
 CREATE POLICY auth_update ON public.events
   FOR UPDATE TO authenticated
   USING (
@@ -40,7 +40,7 @@ CREATE POLICY auth_update ON public.events
     )
   );
 
-DROP POLICY auth_delete ON public.events;
+DROP POLICY "auth_delete ON events" ON public.events;
 CREATE POLICY auth_delete ON public.events
   FOR DELETE TO authenticated
   USING (
@@ -52,12 +52,12 @@ CREATE POLICY auth_delete ON public.events
 
 -- ============================================================
 -- 回滚 SQL（执行后如需还原，整段复制到 Management API 执行）：
--- DROP POLICY IF EXISTS anon_read ON public.events;
+-- DROP POLICY IF EXISTS "anon_read ON events" ON public.events;
 -- DROP POLICY IF EXISTS auth_read ON public.events;
--- DROP POLICY IF EXISTS auth_update ON public.events;
--- DROP POLICY IF EXISTS auth_delete ON public.events;
--- CREATE POLICY anon_read ON public.events FOR SELECT TO public USING (true);
--- CREATE POLICY auth_update ON public.events FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
--- CREATE POLICY auth_delete ON public.events FOR DELETE TO authenticated USING (true);
+-- DROP POLICY IF EXISTS "auth_update ON events" ON public.events;
+-- DROP POLICY IF EXISTS "auth_delete ON events" ON public.events;
+-- CREATE POLICY "anon_read ON events" ON public.events FOR SELECT TO public USING (true);
+-- CREATE POLICY "auth_update ON events" ON public.events FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+-- CREATE POLICY "auth_delete ON events" ON public.events FOR DELETE TO authenticated USING (true);
 -- （auth_insert 本迁移未改动，无需恢复）
 -- ============================================================
