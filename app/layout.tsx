@@ -22,7 +22,10 @@ export default async function RootLayout({
   const grayHost = process.env.NEXT_PUBLIC_GRAY_HOST;
   if (grayHost) {
     const h = await headers();
-    if (h.get("host") === grayHost) {
+    const host = h.get("host") ?? "";
+    // 灰度域名和本分支的 Vercel 预览域名统一上门禁：
+    // 预览 SSO 已关闭（分支绑定的自定义域名不适用生产域名豁免），由本门禁兜底。
+    if (host === grayHost || host.endsWith(".vercel.app")) {
       const pathname = h.get("x-pathname") ?? "";
       // 登录/注册/确认邮件回跳页面不放门禁，否则管理员无法登录
       if (!pathname.startsWith("/auth")) {
