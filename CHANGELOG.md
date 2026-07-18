@@ -2,6 +2,15 @@
 
 本项目从 `v0.1.0` 开始按正式版本留档。所有上线版本都应有 Git tag，并在本文件记录用户可见变化。
 
+## Unreleased
+
+修复注册确认邮件链路（配合 Supabase 后台配置变更一起生效）：
+
+- 新增 `/auth/confirmed` 确认落地页：确认成功提示去登录；链接失效/过期时展示原因，并支持输入邮箱重发确认邮件
+- 注册时传入 `emailRedirectTo`（当前站点 origin + `/auth/confirmed`），确认邮件不再落到 Supabase 后台默认 Site URL
+- 登录页单独识别"邮箱未确认"报错，提示先点确认链接/查垃圾箱，不再统一显示"邮箱或密码错误"
+- 配套后台变更（在 Supabase Dashboard / Management API 执行，不含在本提交内）：Site URL 改为 `https://anikura.cn`，Redirect URLs 加入 `https://anikura.cn/auth/confirmed` 与 `http://localhost:3000/auth/confirmed`，配置 Resend 自定义 SMTP，邮件模板中文化
+
 ## v0.3.0 - 2026-07-18
 
 前端重构 Phase 2（首页重构，TIS 风：字母拼贴 Hero + 无限海报墙）。
