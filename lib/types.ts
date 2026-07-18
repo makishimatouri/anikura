@@ -19,6 +19,8 @@ export interface Event {
   tags: EventTag[];
   header_image_url: string | null;
   poster_url: string | null;
+  /** 额外海报（同一活动的多版海报，主海报为 poster_url） */
+  poster_urls?: string[] | null;
   description: string | null;
   ticket_price: string | null;
   ticket_link: string | null;

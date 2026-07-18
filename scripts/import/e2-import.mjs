@@ -37,32 +37,48 @@ console.log(`${DRY ? "[DRY-RUN] " : ""}批次 ${BATCH}，待导入 ${report.even
 let uploaded = 0, inserted = 0;
 const failures = [];
 for (const e of report.events) {
-  const srcFile = `${SRC}/${e.file}.jpg`;
   const key = e.archive_path; // posters/YYYY-MM/... 或 posters/past/...
   const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""}/storage/v1/object/public/posters/${encodeURI(key)}`;
 
   if (DRY) {
     console.log(`- ${e.file} -> ${key}\n  「${e.title}」${e.date} ${e.city} ${e.status} AX=${e.is_anirox}`);
+    for (const x of e.extra_posters ?? []) console.log(`  + 多版本 ${x.file} -> ${x.archive_path}`);
     continue;
   }
 
-  // 1. 上传（已存在则跳过上传复用 URL）
-  const fileBuf = readFileSync(srcFile);
-  const { error: upErr } = await sb.storage.from("posters").upload(key, fileBuf, {
-    contentType: "image/jpeg",
-    upsert: false,
-  });
-  if (upErr && !upErr.message.includes("already exists")) {
-    failures.push({ file: e.file, stage: "upload", error: upErr.message });
-    console.error(`✗ 上传失败 ${e.file}: ${upErr.message}`);
+  // 1. 上传主海报 + 额外海报（已存在则跳过上传复用 URL）
+  const uploadOne = async (file, k) => {
+    const buf = readFileSync(`${SRC}/${file}.jpg`);
+    const { error } = await sb.storage.from("posters").upload(k, buf, {
+      contentType: "image/jpeg",
+      upsert: false,
+    });
+    return error && !error.message.includes("already exists") ? error.message : null;
+  };
+  const upErr = await uploadOne(e.file, key);
+  if (upErr) {
+    failures.push({ file: e.file, stage: "upload", error: upErr });
+    console.error(`✗ 上传失败 ${e.file}: ${upErr}`);
     continue;
   }
   uploaded++;
+  const extraUrls = [];
+  for (const x of e.extra_posters ?? []) {
+    const xErr = await uploadOne(x.file, x.archive_path);
+    if (xErr) {
+      failures.push({ file: x.file, stage: "upload-extra", error: xErr });
+      console.error(`✗ 额外海报上传失败 ${x.file}: ${xErr}`);
+      continue;
+    }
+    uploaded++;
+    extraUrls.push(`${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""}/storage/v1/object/public/posters/${encodeURI(x.archive_path)}`);
+  }
 
   // 2. 插入
   const row = {
     title: e.title, date: e.date, start_time: e.start_time, end_time: e.end_time,
     city: e.city, venue: e.venue, tags: e.tags, poster_url: publicUrl,
+    poster_urls: extraUrls.length ? extraUrls : null,
     description: e.description, ticket_price: e.ticket_price, ticket_link: e.ticket_link,
     organizer: e.organizer, status: e.status, is_anirox: e.is_anirox,
     qq_group: e.qq_group, qq_group_name: e.qq_group_name,

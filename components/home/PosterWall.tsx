@@ -69,9 +69,12 @@ type Tile = { kind: "event"; event: Event } | { kind: "placeholder" };
  * 真实活动海报原比例展示（不裁切），素材不足时用品牌占位符补齐。
  */
 export default function PosterWall({ events }: PosterWallProps) {
-  const pool: Tile[] = events
-    .filter((e) => e.poster_url)
-    .map((event) => ({ kind: "event", event }) as Tile);
+  // 同一活动的多版海报全部上墙（主海报 + poster_urls），磁贴都链到对应活动详情
+  const pool: Tile[] = events.flatMap((event) =>
+    [event.poster_url, ...(event.poster_urls ?? [])]
+      .filter((u): u is string => !!u)
+      .map((url) => ({ kind: "event", event: { ...event, poster_url: url } }) as Tile)
+  );
 
   if (pool.length === 0) return null;
 

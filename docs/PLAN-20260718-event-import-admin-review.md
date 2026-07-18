@@ -124,3 +124,11 @@ alter table events add column if not exists review_note text;
   /events 月份筛选新增「过往活动」（month=past，status=ended 按日期倒序，城市/类型照常生效）
 - 验证：`npm run check` 通过；本地 dev 冒烟 /、/events、/events?month=past 均 200，海报墙正常渲染
 - 代码已提交到 codex/redesign-phase2（未推送；推送 main 会触发生产部署，待东离发话）
+
+## 13. 多海报支持（2026-07-18 东离补充决策）
+
+同一活动的多版海报：详情页一个活动界面展示多张（一张为主、缩略图切换），海报墙多版本全部上墙（磁贴都链到该活动详情）。
+实现：events 新增 `poster_urls text[]`（额外海报，主海报仍为 poster_url），迁移文件 `supabase/migrations/20260718_event_poster_urls.sql`。
+导入覆盖 7 个活动 8 张额外版本（wall-06/07/27/28/29/36/47/56），归档名为主海报名加 -v2/-v3 后缀。
+前端：详情页 PosterGallery 组件；PosterWall 展平 (event, url) 磁贴；后台编辑页显示全部版本。
+迁移 1（import_batch/source/review_note）东离已于 2026-07-18 在 SQL Editor 执行并验证通过。

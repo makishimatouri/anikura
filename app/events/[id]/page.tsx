@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventById } from "@/lib/queries";
 import { EVENT_TAG_LABELS, EVENT_TAG_COLORS } from "@/lib/types";
+import PosterGallery from "@/components/events/PosterGallery";
 import QQGroupButton from "@/components/events/QQGroupButton";
 import AniROXBadge from "@/components/anirox/AniROXBadge";
 
@@ -31,13 +32,11 @@ export default async function EventDetailPage({ params }: PageProps) {
         ← 返回活动列表
       </Link>
 
-      {/* 海报原图：详情页保留完整比例，不做头图裁剪 */}
-      {event.poster_url && (
-        <div className="rounded-xl overflow-hidden mb-6 bg-bg-elevated border border-bg-elevated">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={event.poster_url} alt={event.title} className="w-full h-auto object-contain" />
-        </div>
-      )}
+      {/* 海报画廊：主海报 + 同一活动的多版海报可切换，保留完整比例 */}
+      <PosterGallery
+        posters={[event.poster_url, ...(event.poster_urls ?? [])].filter((u): u is string => !!u)}
+        title={event.title}
+      />
 
       {/* 标题区 */}
       <div className="space-y-4 mb-8">

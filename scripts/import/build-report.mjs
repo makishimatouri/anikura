@@ -75,6 +75,11 @@ const report = {
     import_batch: BATCH,
     created_by: OWNER_ID,
     archive_path: archivePath(e),
+    // 同一活动的多版海报：全部归档上传，详情页展示 + 海报墙多版本上墙（决策补充 2026-07-18）
+    extra_posters: (e.merged_from ?? []).map((m, i) => ({
+      file: m.file,
+      archive_path: archivePath(e).replace(/\.jpg$/, `-v${i + 2}.jpg`),
+    })),
     series_note: e.dup_note?.includes("均保留") ? e.dup_note : null,
   })),
   skipped,
