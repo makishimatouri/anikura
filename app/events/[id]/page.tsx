@@ -77,13 +77,25 @@ export default async function EventDetailPage({ params }: PageProps) {
         </div>
       )}
 
-      {/* QQ 加群 */}
-      {event.qq_group && (
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-3">交流群</h2>
-          <QQGroupButton qqLink={event.qq_group} groupName={event.qq_group_name} />
-        </div>
-      )}
+      {/* QQ 加群：多群逐条展示，群号自动转换为加群跳转 */}
+      {(() => {
+        const groups = event.qq_groups?.length
+          ? event.qq_groups
+          : event.qq_group
+            ? [event.qq_group]
+            : [];
+        if (groups.length === 0) return null;
+        return (
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold mb-3">交流群</h2>
+            <div className="space-y-3">
+              {groups.map((g) => (
+                <QQGroupButton key={g} groupNumber={g} />
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* 购票 */}
       {event.ticket_link && (

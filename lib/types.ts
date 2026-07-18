@@ -37,8 +37,12 @@ export interface Event {
   source?: string | null;
   /** 超管驳回时填写的备注 */
   review_note?: string | null;
+  /** 主群群号（兼容列；多群场景为第一个群） */
   qq_group: string | null;
+  /** @deprecated 已被多群号取代，后台不再写入 */
   qq_group_name: string | null;
+  /** 全部 QQ 群号（第一个为主群） */
+  qq_groups?: string[] | null;
   created_at: string;
   updated_at: string;
 }
