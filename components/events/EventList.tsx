@@ -10,17 +10,24 @@ interface EventListProps {
 }
 
 export default async function EventList({ city, tag, month }: EventListProps) {
+  const isPast = month === "past";
   let query = supabase
     .from("events")
     .select("*")
-    .eq("status", "ongoing")
-    .eq("review_status", "approved")
-    .order("is_anirox", { ascending: false })
-    .order("date", { ascending: true });
+    .eq("review_status", "approved");
+  if (isPast) {
+    // 过往活动归档视图：已结束、按日期倒序；城市/类型筛选照常生效
+    query = query.eq("status", "ended").order("date", { ascending: false });
+  } else {
+    query = query
+      .eq("status", "ongoing")
+      .order("is_anirox", { ascending: false })
+      .order("date", { ascending: true });
+  }
 
   if (city) query = query.eq("city", city);
   if (tag) query = query.contains("tags", [tag]);
-  if (month) {
+  if (month && !isPast) {
     const monthStart = `${month}-01`;
     // 取该月最后一天，避免 9/11 月用 31 号导致无效日期
     const [y, m] = month.split("-").map(Number);
@@ -44,8 +51,8 @@ export default async function EventList({ city, tag, month }: EventListProps) {
       <div className="space-y-8">
         <EventFilter />
         <div className="text-center py-16 text-text-muted">
-          <p className="text-lg">该条件下暂无活动</p>
-          <p className="mt-2 text-sm">试试其他筛选条件，或者去提交一个新活动</p>
+          <p className="text-lg">{isPast ? "暂无过往活动" : "该条件下暂无活动"}</p>
+          {!isPast && <p className="mt-2 text-sm">试试其他筛选条件，或者去提交一个新活动</p>}
         </div>
       </div>
     );

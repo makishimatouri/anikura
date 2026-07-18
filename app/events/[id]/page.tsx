@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventById } from "@/lib/queries";
 import { EVENT_TAG_LABELS, EVENT_TAG_COLORS } from "@/lib/types";
+import PosterGallery from "@/components/events/PosterGallery";
 import QQGroupButton from "@/components/events/QQGroupButton";
 import AniROXBadge from "@/components/anirox/AniROXBadge";
 
@@ -31,13 +32,11 @@ export default async function EventDetailPage({ params }: PageProps) {
         ← 返回活动列表
       </Link>
 
-      {/* 海报原图：详情页保留完整比例，不做头图裁剪 */}
-      {event.poster_url && (
-        <div className="rounded-xl overflow-hidden mb-6 bg-bg-elevated border border-bg-elevated">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={event.poster_url} alt={event.title} className="w-full h-auto object-contain" />
-        </div>
-      )}
+      {/* 海报画廊：主海报 + 同一活动的多版海报可切换，保留完整比例 */}
+      <PosterGallery
+        posters={[event.poster_url, ...(event.poster_urls ?? [])].filter((u): u is string => !!u)}
+        title={event.title}
+      />
 
       {/* 标题区 */}
       <div className="space-y-4 mb-8">
@@ -66,6 +65,7 @@ export default async function EventDetailPage({ params }: PageProps) {
         )}
         <InfoItem label="城市" value={event.city} icon="📍" />
         <InfoItem label="场地" value={event.venue} icon="🏟️" />
+        {event.address && <InfoItem label="详细地址" value={event.address} icon="🗺️" />}
         {event.ticket_price && <InfoItem label="票价" value={event.ticket_price} icon="🎫" />}
         {event.organizer && <InfoItem label="主办方" value={event.organizer} icon="👤" />}
       </div>
@@ -78,13 +78,25 @@ export default async function EventDetailPage({ params }: PageProps) {
         </div>
       )}
 
-      {/* QQ 加群 */}
-      {event.qq_group && (
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-3">交流群</h2>
-          <QQGroupButton qqLink={event.qq_group} groupName={event.qq_group_name} />
-        </div>
-      )}
+      {/* QQ 加群：多群逐条展示，群号自动转换为加群跳转 */}
+      {(() => {
+        const groups = event.qq_groups?.length
+          ? event.qq_groups
+          : event.qq_group
+            ? [event.qq_group]
+            : [];
+        if (groups.length === 0) return null;
+        return (
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold mb-3">交流群</h2>
+            <div className="space-y-3">
+              {groups.map((g) => (
+                <QQGroupButton key={g} groupNumber={g} />
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* 购票 */}
       {event.ticket_link && (

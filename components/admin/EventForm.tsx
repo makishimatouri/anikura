@@ -37,6 +37,7 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
     end_time: initialData?.end_time ?? "",
     city: initialData?.city ?? "",
     venue: initialData?.venue ?? "",
+    address: initialData?.address ?? "",
     tags: initialData?.tags ?? [] as EventTag[],
     header_image_url: initialData?.header_image_url ?? "",
     poster_url: initialData?.poster_url ?? "",
@@ -49,9 +50,25 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
     is_featured: initialData?.is_featured ?? false,
     has_lottery: initialData?.has_lottery ?? false,
     lottery_points_cost: initialData?.lottery_points_cost ?? 30,
-    qq_group: initialData?.qq_group ?? "",
-    qq_group_name: initialData?.qq_group_name ?? "",
   });
+  // 多 QQ 群：后台只填群号；新列优先，旧列回退
+  const [qqGroups, setQqGroups] = useState<string[]>(
+    initialData?.qq_groups?.length
+      ? [...initialData.qq_groups]
+      : initialData?.qq_group
+        ? [initialData.qq_group]
+        : []
+  );
+
+  function updateQqGroup(index: number, value: string) {
+    setQqGroups((prev) => prev.map((g, i) => (i === index ? value : g)));
+  }
+  function addQqGroup() {
+    setQqGroups((prev) => [...prev, ""]);
+  }
+  function removeQqGroup(index: number) {
+    setQqGroups((prev) => prev.filter((_, i) => i !== index));
+  }
 
   function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -96,10 +113,14 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
     setLoading(true);
 
     const headerImageValue = form.header_image_url.trim() || null;
+    const cleanedGroups = qqGroups.map((g) => g.trim()).filter(Boolean);
     const payload = {
       ...form,
       header_image_url: undefined as string | null | undefined,
       poster_url: form.poster_url.trim() || null,
+      qq_group: cleanedGroups[0] ?? null,
+      qq_groups: cleanedGroups.length ? cleanedGroups : null,
+      qq_group_name: null,
       review_status: isSuper ? "approved" : "pending",
       updated_at: new Date().toISOString(),
     };
@@ -118,8 +139,29 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
         setError("保存失败：数据库还没有添加头图字段 header_image_url。请先在 Supabase SQL Editor 执行仓库里的 supabase/migrations/20260709_add_event_header_image.sql。");
         return;
       }
+      if (error.message.includes("qq_groups")) {
+        setError("保存失败：数据库还没有添加多群字段 qq_groups。请先在 Supabase SQL Editor 执行仓库里的 supabase/migrations/20260718_event_qq_groups.sql。");
+        return;
+      }
       setError("保存失败：" + error.message);
       return;
+    }
+
+    // 非超管编辑「已通过」活动：保存后已回落 pending 暂时下线，通知所有超管复核
+    if (initialData && !isSuper && initialData.review_status === "approved") {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+        if (token) {
+          await fetch("/api/notify-supers", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ eventId: initialData.id, title: form.title }),
+          });
+        }
+      } catch {
+        // 通知失败不阻塞保存流程
+      }
     }
 
     const redirectTo = isSuper ? "/admin/dashboard" : "/admin/panel";
@@ -130,6 +172,11 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {error && <p className="text-red-400 text-sm bg-red-500/10 p-3 rounded-lg">{error}</p>}
+      {initialData && !isSuper && initialData.review_status === "approved" && (
+        <p className="text-yellow-400 text-sm bg-yellow-500/10 p-3 rounded-lg">
+          该活动当前已通过审核。你保存修改后，活动会回到待审核状态并暂时从公开区下线，等待超管复核。
+        </p>
+      )}
 
       <FormField label="活动名称" required>
         <input
@@ -189,6 +236,15 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
             onChange={(e) => update("venue", e.target.value)}
             className="form-input"
             placeholder="MAO Livehouse"
+          />
+        </FormField>
+        <FormField label="具体地址">
+          <input
+            type="text"
+            value={form.address}
+            onChange={(e) => update("address", e.target.value)}
+            className="form-input"
+            placeholder="逸仙路1328号3号楼（选填）"
           />
         </FormField>
       </div>
@@ -265,26 +321,39 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
         </FormField>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField label="QQ群加群链接">
-          <input
-            type="url"
-            value={form.qq_group}
-            onChange={(e) => update("qq_group", e.target.value)}
-            className="form-input"
-            placeholder="https://qm.qq.com/q/..."
-          />
-        </FormField>
-        <FormField label="QQ群名称">
-          <input
-            type="text"
-            value={form.qq_group_name}
-            onChange={(e) => update("qq_group_name", e.target.value)}
-            className="form-input"
-            placeholder="Anikura 上海交流群"
-          />
-        </FormField>
-      </div>
+      <FormField label="QQ群（只填群号，前台自动生成加群按钮）">
+        <div className="space-y-2">
+          {qqGroups.length === 0 && (
+            <p className="text-xs text-text-muted">暂无群聊，点击下方按钮添加</p>
+          )}
+          {qqGroups.map((group, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input
+                type="text"
+                inputMode="numeric"
+                value={group}
+                onChange={(e) => updateQqGroup(i, e.target.value)}
+                className="form-input flex-1"
+                placeholder={i === 0 ? "主群群号，例如 872282393" : "其他群群号"}
+              />
+              <button
+                type="button"
+                onClick={() => removeQqGroup(i)}
+                className="flex-none px-3 py-2 rounded-lg border border-red-500/50 text-red-400 hover:bg-red-500/10 text-sm"
+              >
+                删除
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addQqGroup}
+            className="px-4 py-2 rounded-lg border border-bg-elevated text-text-muted hover:border-neon-purple/50 hover:text-text transition-colors text-sm"
+          >
+            ＋ 添加更多QQ群
+          </button>
+        </div>
+      </FormField>
 
       <ImageUploadField
         label="头图图片（可选）"
@@ -420,8 +489,12 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
             <button
               type="button"
               onClick={async () => {
-                if (!confirm("确认拒绝该活动？")) return;
-                await supabase.from("events").update({ review_status: "rejected" }).eq("id", initialData.id);
+                const reason = prompt("驳回原因（可选，将记录到审核备注）：");
+                if (reason === null) return;
+                await supabase
+                  .from("events")
+                  .update({ review_status: "rejected", review_note: reason || null })
+                  .eq("id", initialData.id);
                 router.push("/admin/dashboard");
                 router.refresh();
               }}

@@ -77,3 +77,31 @@ export async function getAllEventsAdmin(): Promise<Event[]> {
   if (error) throw error;
   return data ?? [];
 }
+
+/** 首页 Hero 最新收录：最新创建并已审核通过的活动 */
+export async function getLatestApprovedEvent(): Promise<Event | null> {
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("review_status", "approved")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) return null;
+  return data;
+}
+
+/** 首页海报墙唯一数据源：有海报的已审核活动（不限 status；素材桶已退役，仅作备份） */
+export async function getWallEvents(limit = 60): Promise<Event[]> {
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("review_status", "approved")
+    .not("poster_url", "is", null)
+    .order("date", { ascending: false })
+    .limit(limit);
+
+  if (error) return [];
+  return data ?? [];
+}

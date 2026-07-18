@@ -16,9 +16,13 @@ export interface Event {
   end_time: string | null;
   city: string;
   venue: string;
+  /** 具体地址（场地名为 venue，门牌地址单列） */
+  address?: string | null;
   tags: EventTag[];
   header_image_url: string | null;
   poster_url: string | null;
+  /** 额外海报（同一活动的多版海报，主海报为 poster_url） */
+  poster_urls?: string[] | null;
   description: string | null;
   ticket_price: string | null;
   ticket_link: string | null;
@@ -29,8 +33,18 @@ export interface Event {
   has_lottery: boolean;
   lottery_points_cost: number;
   review_status: string | null;
+  /** 批量导入批次号（手动创建为 null） */
+  import_batch?: string | null;
+  /** 来源：manual 手动创建 / bulk-import 批量导入 */
+  source?: string | null;
+  /** 超管驳回时填写的备注 */
+  review_note?: string | null;
+  /** 主群群号（兼容列；多群场景为第一个群） */
   qq_group: string | null;
+  /** @deprecated 已被多群号取代，后台不再写入 */
   qq_group_name: string | null;
+  /** 全部 QQ 群号（第一个为主群） */
+  qq_groups?: string[] | null;
   created_at: string;
   updated_at: string;
 }

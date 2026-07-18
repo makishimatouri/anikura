@@ -2,18 +2,25 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-bg-elevated mt-20 py-10">
-      <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="text-text-muted text-sm">
-          <p>AniROX 厂牌 · Anikura CN 活动聚合</p>
-          <p className="mt-1">© {new Date().getFullYear()} AniROX. All rights reserved.</p>
-        </div>
-        <div className="flex gap-6 text-sm text-text-muted">
-          <Link href="/about" className="hover:text-text transition-colors">关于</Link>
-          <Link href="/contact" className="hover:text-text transition-colors">联系</Link>
-          <Link href="/events" className="hover:text-text transition-colors">活动</Link>
-        </div>
-      </div>
+    <footer className="mt-20 border-t border-white/10 py-14 text-center">
+      <p className="font-display text-2xl tracking-[0.15em] text-text">ANIKURA CN</p>
+      <nav className="mt-5 flex items-center justify-center gap-6 text-xs text-text-muted">
+        <Link href="/events" className="transition-colors hover:text-text">
+          活动
+        </Link>
+        <Link href="/anirox" className="transition-colors hover:text-text">
+          AniROX
+        </Link>
+        <Link href="/about" className="transition-colors hover:text-text">
+          关于
+        </Link>
+        <Link href="/contact" className="transition-colors hover:text-text">
+          联系
+        </Link>
+      </nav>
+      <p className="mt-5 text-[11px] tracking-[0.2em] text-text-muted">
+        © {new Date().getFullYear()} ANIROX · 动漫歌曲 CLUB 活动聚合
+      </p>
     </footer>
   );
 }

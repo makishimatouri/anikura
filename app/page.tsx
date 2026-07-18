@@ -1,22 +1,43 @@
-import HeroSection from "@/components/home/HeroSection";
+import HeroCollage from "@/components/home/HeroCollage";
+import PosterWall from "@/components/home/PosterWall";
 import RandomRecommendation from "@/components/home/RandomRecommendation";
 import FeaturedEvents from "@/components/home/FeaturedEvents";
-import MobileHomeSections from "@/components/home/MobileHomeSections";
-import { getRecommendationEvents } from "@/lib/queries";
+import {
+  getLatestApprovedEvent,
+  getRecommendationEvents,
+  getWallEvents,
+} from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const recommendationEvents = await getRecommendationEvents();
+  const [latestEvent, wallEvents, recommendationEvents] = await Promise.all([
+    getLatestApprovedEvent(),
+    getWallEvents(),
+    getRecommendationEvents(),
+  ]);
+
+  const hasWall = wallEvents.filter((e) => e.poster_url).length > 0;
 
   return (
     <>
-      <MobileHomeSections recommendationEvents={recommendationEvents} />
-      <div className="hidden md:block">
-        <HeroSection />
-        <RandomRecommendation events={recommendationEvents} />
-        <FeaturedEvents />
-      </div>
+      {hasWall ? (
+        // TIS 幕布结构：海报墙 sticky 钉在视口底层持续滚动，
+        // Hero 以实底盖在上层，上滑掀开后露出海报墙，墙再随页面滚走
+        <div className="relative">
+          <div className="sticky top-14 z-0 h-[calc(100svh-3.5rem)]">
+            <PosterWall events={wallEvents} />
+          </div>
+          <div className="relative z-10 -mt-[calc(100svh-3.5rem)]">
+            <HeroCollage latest={latestEvent} />
+          </div>
+          <div aria-hidden="true" className="h-[calc(100svh-3.5rem)]" />
+        </div>
+      ) : (
+        <HeroCollage latest={latestEvent} />
+      )}
+      <FeaturedEvents />
+      <RandomRecommendation events={recommendationEvents} />
     </>
   );
 }

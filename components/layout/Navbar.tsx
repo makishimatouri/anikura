@@ -7,14 +7,14 @@ import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 
 const NAV_LINKS = [
-  { href: "/", label: "首页" },
-  { href: "/events", label: "活动" },
-  { href: "/anirox", label: "AniROX" },
-  { href: "/checkin", label: "签到" },
-  { href: "/points", label: "积分" },
-  { href: "/notifications", label: "通知" },
-  { href: "/about", label: "关于" },
-  { href: "/contact", label: "联系" },
+  { href: "/", en: "HOME", cn: "首页" },
+  { href: "/events", en: "EVENTS", cn: "全国活动" },
+  { href: "/anirox", en: "AniROX", cn: "厂牌专场", brand: true },
+  { href: "/checkin", en: "CHECK-IN", cn: "签到" },
+  { href: "/points", en: "POINTS", cn: "积分" },
+  { href: "/notifications", en: "NOTICE", cn: "通知" },
+  { href: "/about", en: "ABOUT", cn: "关于" },
+  { href: "/contact", en: "CONTACT", cn: "联系" },
 ];
 
 export default function Navbar() {
@@ -26,34 +26,26 @@ export default function Navbar() {
   const isAniroxPage = pathname === "/anirox";
 
   useEffect(() => {
+    function fetchProfile(userId: string) {
+      supabase
+        .from("profiles")
+        .select("is_admin, is_super_admin")
+        .eq("id", userId)
+        .single()
+        .then(({ data: p }) => {
+          const profile = p as { is_admin: boolean; is_super_admin: boolean } | null;
+          setIsAdmin(!!profile && (profile.is_admin || profile.is_super_admin));
+          setIsSuper(!!profile?.is_super_admin);
+        });
+    }
     supabase.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null);
-      if (data.session) {
-        supabase
-          .from("profiles")
-          .select("is_admin, is_super_admin")
-          .eq("id", data.session.user.id)
-          .single()
-          .then(({ data: p }) => {
-            const profile = p as { is_admin: boolean; is_super_admin: boolean };
-            setIsAdmin(!!profile && (profile.is_admin || profile.is_super_admin));
-            setIsSuper(!!profile?.is_super_admin);
-          });
-      }
+      if (data.session) fetchProfile(data.session.user.id);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
       if (session) {
-        supabase
-          .from("profiles")
-          .select("is_admin, is_super_admin")
-          .eq("id", session.user.id)
-          .single()
-          .then(({ data: p }) => {
-            const profile = p as { is_admin: boolean; is_super_admin: boolean };
-            setIsAdmin(!!profile && (profile.is_admin || profile.is_super_admin));
-            setIsSuper(!!profile?.is_super_admin);
-          });
+        fetchProfile(session.user.id);
       } else {
         setIsAdmin(false);
         setIsSuper(false);
@@ -62,111 +54,156 @@ export default function Navbar() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  // 路由变化时自动收起抽屉
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  // 抽屉打开时锁定页面滚动，Esc 关闭
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    if (menuOpen) window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
   async function handleLogout() {
     await supabase.auth.signOut();
     window.location.href = "/";
   }
 
+  function isActive(href: string) {
+    return href === "/" ? pathname === "/" : pathname.startsWith(href);
+  }
+
   return (
-    <header className="sticky top-0 z-50 bg-bg/80 backdrop-blur-md border-b border-bg-elevated">
-      <nav className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="flex items-center">
+    <>
+      {/* 极简顶栏：logo + 汉堡，全站深色底白字即清晰可见 */}
+      <header className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 py-5 md:px-8">
+        <Link href="/" className="flex items-center" aria-label="Anikura CN 首页">
           {isAniroxPage ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src="/logo.png" alt="AniROX" className="h-7 w-auto brightness-0 invert" />
           ) : (
-            <span className="text-xl font-bold bg-gradient-to-r from-neon-purple to-neon-pink bg-clip-text text-transparent">
-              Anikura CN
+            <span className="font-display text-xl tracking-wider text-white">
+              Anikura&nbsp;CN
             </span>
           )}
         </Link>
-
-        {/* 桌面端导航 */}
-        <ul className="hidden md:flex items-center gap-4">
-          {NAV_LINKS.map((link) => (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                className="text-sm text-text-muted hover:text-text transition-colors px-2 py-2 rounded-md hover:bg-bg-elevated"
-              >
-                {link.label}
-              </Link>
-            </li>
-          ))}
-          <li className="ml-2 flex items-center gap-2">
-            {isAdmin && (
-              <Link href={isSuper ? "/admin/dashboard" : "/admin/panel"} className="text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-gray-700 to-gray-600 text-white hover:from-neon-purple hover:to-neon-pink transition-colors font-medium">
-                后台
-              </Link>
-            )}
-            {user ? (
-              <>
-                <span className="text-xs text-text-muted hidden md:inline">{user.email}</span>
-                <button onClick={handleLogout} className="text-xs px-3 py-1.5 rounded-full border border-bg-elevated text-text-muted hover:text-text hover:border-neon-purple/50 transition-colors">
-                  退出
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/auth/login" className="text-xs px-3 py-1.5 rounded-full border border-bg-elevated text-text-muted hover:text-text hover:border-neon-purple/50 transition-colors">
-                  登录
-                </Link>
-                <Link href="/auth/signup" className="text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-neon-purple to-neon-pink text-white">
-                  注册
-                </Link>
-              </>
-            )}
-          </li>
-        </ul>
-
-        {/* 手机端汉堡按钮 */}
         <button
-          className="md:hidden w-8 h-8 flex items-center justify-center text-text-muted"
+          type="button"
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="菜单"
+          aria-label={menuOpen ? "关闭菜单" : "打开菜单"}
+          aria-expanded={menuOpen}
+          className="relative h-[22px] w-[34px] cursor-pointer"
         >
-          {menuOpen ? "✕" : "☰"}
+          <span
+            className={`absolute left-0 h-[2px] w-full bg-white transition-all duration-300 ${
+              menuOpen ? "top-[10px] rotate-45" : "top-0"
+            }`}
+          />
+          <span
+            className={`absolute left-0 top-[10px] h-[2px] w-full bg-white transition-all duration-300 ${
+              menuOpen ? "opacity-0" : ""
+            }`}
+          />
+          <span
+            className={`absolute left-0 h-[2px] w-full bg-white transition-all duration-300 ${
+              menuOpen ? "top-[10px] -rotate-45" : "top-[20px]"
+            }`}
+          />
         </button>
-      </nav>
+      </header>
 
-      {/* 手机端展开菜单 */}
+      {/* 遮罩（移动端点空白处收抽屉） */}
       {menuOpen && (
-        <div className="md:hidden bg-bg-card border-t border-bg-elevated px-4 py-3 space-y-2">
+        <div
+          className="fixed inset-0 z-30 bg-black/40 md:bg-transparent"
+          onClick={() => setMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* 右侧抽屉菜单（TIS 风：EN 大字 + 中文小字 + 细线） */}
+      <nav
+        aria-hidden={!menuOpen}
+        className={`fixed right-0 top-0 bottom-0 z-40 flex w-[min(420px,88vw)] flex-col border-l border-white/10 bg-[#0b0b11] px-8 pb-10 pt-24 transition-transform duration-[450ms] ease-[cubic-bezier(.7,0,.2,1)] md:px-12 ${
+          menuOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <p className="mb-7 text-[11px] tracking-[0.4em] text-text-muted">CONTENTS MENU</p>
+        <div className="overflow-y-auto">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              onClick={() => setMenuOpen(false)}
-              className={`block px-3 py-2 rounded-md text-sm ${
-                pathname === link.href
-                  ? "bg-neon-purple/20 text-neon-purple"
-                  : "text-text-muted hover:bg-bg-elevated"
-              }`}
+              className="group flex items-baseline justify-between border-b border-white/10 py-[15px]"
             >
-              {link.label}
+              <span
+                className={`font-display text-3xl tracking-wide transition-all duration-300 group-hover:translate-x-1.5 ${
+                  link.brand
+                    ? "bg-gradient-to-r from-neon-purple to-neon-pink bg-clip-text text-transparent"
+                    : isActive(link.href)
+                      ? "text-neon-purple"
+                      : "text-text group-hover:text-neon-purple"
+                }`}
+              >
+                {link.en}
+              </span>
+              <span className="text-xs text-text-muted">{link.cn}</span>
             </Link>
           ))}
-          <div className="pt-2 border-t border-bg-elevated flex flex-wrap gap-2">
-            {isAdmin && (
-              <Link href={isSuper ? "/admin/dashboard" : "/admin/panel"} className="text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-gray-700 to-gray-600 text-white">
-                后台
-              </Link>
-            )}
-            {user ? (
-              <>
-                <span className="text-xs text-text-muted w-full truncate">{user.email}</span>
-                <button onClick={handleLogout} className="text-xs px-3 py-1.5 rounded-full border border-bg-elevated text-text-muted">
-                  退出
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/auth/login" className="text-xs px-3 py-1.5 rounded-full border border-bg-elevated text-text-muted">登录</Link>
-                <Link href="/auth/signup" className="text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-neon-purple to-neon-pink text-white">注册</Link>
-              </>
-            )}
-          </div>
+          {isAdmin && (
+            <Link
+              href={isSuper ? "/admin/dashboard" : "/admin/panel"}
+              className="group flex items-baseline justify-between border-b border-white/10 py-[15px]"
+            >
+              <span className="font-display text-3xl tracking-wide text-text-muted transition-all duration-300 group-hover:translate-x-1.5 group-hover:text-neon-purple">
+                ADMIN
+              </span>
+              <span className="text-xs text-text-muted">后台</span>
+            </Link>
+          )}
         </div>
-      )}
-    </header>
+
+        <div className="mt-auto flex flex-col gap-4 pt-8">
+          {user ? (
+            <div className="flex items-center justify-between gap-3">
+              <span className="truncate text-xs text-text-muted">{user.email}</span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="shrink-0 rounded-full border border-white/15 px-5 py-2 text-[13px] text-text transition-colors hover:border-neon-purple/60"
+              >
+                退出
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-3">
+              <Link
+                href="/auth/login"
+                className="rounded-full border border-white/15 px-6 py-2 text-[13px] text-text transition-colors hover:border-neon-purple/60"
+              >
+                登录
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="rounded-full bg-gradient-to-r from-neon-purple to-neon-pink px-6 py-2 text-[13px] text-white transition-opacity hover:opacity-90"
+              >
+                注册
+              </Link>
+            </div>
+          )}
+          <p className="text-[11px] tracking-[0.12em] text-text-muted">
+            MAINTAINED BY ANIROX
+          </p>
+        </div>
+      </nav>
+    </>
   );
 }

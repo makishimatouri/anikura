@@ -2,7 +2,52 @@
 
 本项目从 `v0.1.0` 开始按正式版本留档。所有上线版本都应有 Git tag，并在本文件记录用户可见变化。
 
-## Unreleased
+## v0.3.1 - 2026-07-18
+
+修复注册确认邮件链路（配合 Supabase 后台配置变更一起生效）：
+
+- 新增 `/auth/confirmed` 确认落地页：确认成功提示去登录；链接失效/过期时展示原因，并支持输入邮箱重发确认邮件
+- 注册时传入 `emailRedirectTo`（当前站点 origin + `/auth/confirmed`），确认邮件不再落到 Supabase 后台默认 Site URL
+- 登录页单独识别"邮箱未确认"报错，提示先点确认链接/查垃圾箱，不再统一显示"邮箱或密码错误"
+- 配套后台变更（在 Supabase Dashboard / Management API 执行，不含在本提交内）：Site URL 改为 `https://anikura.cn`，Redirect URLs 加入 `https://anikura.cn/auth/confirmed` 与 `http://localhost:3000/auth/confirmed`，配置 Resend 自定义 SMTP，邮件模板中文化
+
+## v0.3.0 - 2026-07-18
+
+前端重构 Phase 2（首页重构，TIS 风：字母拼贴 Hero + 无限海报墙）。
+
+- 首屏 Hero 重构：ANIKURA 巨型字母（Anton）内填活动海报（SVG clipPath 数据驱动），海报带缓慢平移、紫粉渐变描边；下方标语「动漫歌曲 CLUB 活动聚合」+ 英文小字
+- Hero 左下角新增最新收录条（LATEST）：圆海报 + 日期城市 + 标题，取最新创建的已审核活动，点击进详情
+- 新增三行无限滚动海报墙（首页招牌区）：每行 1/3 视口高（移动端 60vw），中间行反向，行时长错开，悬停暂停；磁贴按海报原始比例展示不裁切，默认压暗、悬停提亮并滑出信息板（活动名 + 日期 + 城市），点击进详情；行边缘渐隐；真实海报不足时用品牌占位符磁贴（编号 + 「虚位以待」引导联系投稿）补齐
+- 近期活动区重构：UPCOMING 章节大标题 + 中文小字 + 渐变短划线，横滑竖版海报卡（3:4，snap 对齐），末尾「查看全部活动」虚线卡
+- 精选推荐保留并换章节标题样式（FEATURED），「换一个」功能不变
+- 新增通用章节标题组件 SectionHead；MobileHomeSections 与旧 HeroSection 退役，首页统一为响应式单实现
+- 修复 Marquee 轨道高度塌陷（track 缺 height:100% 导致磁贴按原图高度渲染）
+- 加载遮罩行为修正：由"每会话一次"改为"每次完整加载都出现"（与 TIS 一致），站内 SPA 跳转仍不触发
+- Hero 字母改为真镂空：ANIKURA 以 SVG mask 在暗色遮罩上打洞，透过字母直接看到底层持续滚动的海报墙（不再单独填充海报内容），渐变描边保留；桌面/移动端两套 viewBox
+- 首页首屏改为 TIS 幕布结构：海报墙 sticky 钉在视口底层持续滚动，Hero 实底盖在上层，上滑掀开后露出海报墙，墙再随页面正常滚走（纯 CSS sticky 实现，无 JS）；移动端一致
+- 海报墙素材接入：新建 Supabase 公开桶 wall-posters，导入东离提供的 58 张国内 anikura 活动海报（最长边 900 压缩）；服务端用 service role 列目录（新桶无公开 list 策略），文件公开可读；Hero 字母拼贴从素材桶均匀抽取 4 张
+- 动效均适配 prefers-reduced-motion
+
+## v0.2.0 - 2026-07-17
+
+前端重构 Phase 0 + Phase 1（TIS 风全局骨架上线，页面内容区暂保持原样）。
+
+Phase 0（地基，无外观变化）：
+
+- 新增自托管字体 `public/fonts/`（Anton 400、Oswald 可变字重），`@font-face` 挂载，不经过外部 CDN
+- `globals.css` 新增设计 token（--font-display / --font-en）、无缝跑马灯和滚动淡入基础样式，均适配 prefers-reduced-motion
+- 新增基础组件 `components/ui/Marquee.tsx`（无限横向滚动）和 `components/ui/Reveal.tsx`（进入视口淡入），暂未接入任何页面
+- 存档 tag `archive/pre-redesign-20260717` 指向 main b45169a；重构设计定稿文档暂存仓库外，后续阶段迁入 docs/
+
+Phase 1（全局骨架）：
+
+- 顶栏重构为极简固定栏：仅左侧 Anton 站名（/anirox 页为厂牌 logo）+ 右侧汉堡按钮，原 8 链接横排导航移除
+- 新增右侧抽屉菜单（TIS 风）：英文大字（Anton）+ 中文小字 + 细线分隔，当前路由紫色高亮，AniROX 项紫粉渐变，登录/注册/退出与后台入口收进抽屉底部，支持 Esc 关闭、路由变化自动收起、打开时锁定页面滚动
+- 页脚改为居中极简：Anton 站名 + 四个小链接 + 版权行
+- 新增首次进入加载遮罩（黑底站名淡出，同一会话只出现一次）
+- 新增页面进入转场（template.tsx，淡入上移 0.5s）
+- 全站底色压黑至 #08080c、面板 #0e0e14，叠加极淡噪点纹理
+- 动效均适配 prefers-reduced-motion
 
 维护文档交接体系重建中。
 

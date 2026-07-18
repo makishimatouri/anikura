@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Event } from "@/lib/types";
+import SectionHead from "./SectionHead";
 
 interface RandomRecommendationProps {
   events: Event[];
@@ -33,8 +34,10 @@ export default function RandomRecommendation({ events }: RandomRecommendationPro
 
   return (
     <section className="max-w-6xl mx-auto px-4 py-10">
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <h2 className="text-2xl font-bold">精选推荐</h2>
+      <div className="mb-10">
+        <SectionHead en="FEATURED" cn="精 选 推 荐" />
+      </div>
+      <div className="flex justify-end mb-6 -mt-6">
         <button
           type="button"
           onClick={changeEvent}

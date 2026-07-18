@@ -17,7 +17,13 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
-      setError("登录失败：邮箱或密码错误");
+      if (error.message.toLowerCase().includes("email not confirmed")) {
+        setError(
+          "邮箱还没确认：请先到邮箱里点击确认链接（记得看垃圾箱）。链接过期的话，回到注册页用同一邮箱重新提交一次，会重新发确认邮件。"
+        );
+      } else {
+        setError("登录失败：邮箱或密码错误");
+      }
       return;
     }
     window.location.href = "/checkin";
