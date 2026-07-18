@@ -156,8 +156,8 @@ body {
 
 /* 海报墙行：边缘渐隐 + 悬停信息板 */
 .wall-row {
-  /* 显式行高：flex-1 的百分比高度链在部分场景失效，导致磁贴按图片原始尺寸撑开 */
-  height: calc((100svh - 3.5rem) / 3);
+  /* 行高由 PosterWall 容器的 grid-rows-3（minmax(0,1fr)）决定：
+     flex/百分比高度链会导致磁贴按原图撑开或行高 1:1:2 失真 */
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
 }

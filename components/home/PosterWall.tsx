@@ -86,7 +86,7 @@ export default function PosterWall({ events }: PosterWallProps) {
   });
 
   return (
-    <section aria-label="活动海报墙" className="flex h-full flex-col">
+    <section aria-label="活动海报墙" className="grid h-full grid-rows-3">
       {rows.map((tiles, row) => (
         <div key={row} className="wall-row overflow-hidden">
           <Marquee duration={ROW_DURATION[row]} reverse={row === 1}>
