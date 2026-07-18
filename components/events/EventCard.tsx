@@ -1,64 +1,57 @@
 import Link from "next/link";
-import { Event, EVENT_TAG_LABELS, EVENT_TAG_COLORS } from "@/lib/types";
+import { Event, EVENT_TAG_LABELS } from "@/lib/types";
 import AniROXBadge from "@/components/anirox/AniROXBadge";
 
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  return `${d.getMonth() + 1}月${d.getDate()}日`;
+function formatShort(dateStr: string): string {
+  // date 为 YYYY-MM-DD，直接拆分避免时区偏移
+  const [, m, d] = dateStr.split("-");
+  return `${Number(m)}.${Number(d)}`;
 }
 
+/** TIS 风活动卡：竖版 3:4 海报（轻微裁切）+ 黑色类型角标 + 紫色日期行 */
 export default function EventCard({ event }: { event: Event }) {
-  const headerImage = event.header_image_url || event.poster_url;
+  const image = event.poster_url || event.header_image_url;
+  const primaryTag = event.tags[0];
 
   return (
     <Link
       href={`/events/${event.id}`}
-      className="block group bg-bg-card border border-bg-elevated rounded-xl overflow-hidden hover:border-neon-purple/50 hover:shadow-lg hover:shadow-neon-purple/10 transition-all duration-300"
+      className="group block bg-bg-card border border-bg-elevated rounded-xl overflow-hidden transition-all duration-300 hover:border-neon-purple/50 hover:-translate-y-1"
     >
-      {/* 头图：未上传头图时自动用海报裁剪展示 */}
-      <div className="aspect-[16/9] bg-bg-elevated relative overflow-hidden">
-        {headerImage ? (
+      <div className="aspect-[3/4] bg-bg-elevated relative overflow-hidden">
+        {image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={headerImage}
+            src={image}
             alt={event.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neon-purple/10 to-neon-pink/10">
             <span className="text-4xl">🎵</span>
           </div>
         )}
+        {primaryTag && (
+          <span className="absolute top-3 left-3 bg-black/85 text-white text-[10px] tracking-[0.2em] px-2.5 py-1.5">
+            {EVENT_TAG_LABELS[primaryTag]}
+          </span>
+        )}
         {event.is_anirox && (
-          <div className="absolute top-3 left-3">
+          <div className="absolute top-3 right-3">
             <AniROXBadge />
           </div>
         )}
       </div>
 
-      {/* 信息 */}
-      <div className="p-4 space-y-2">
-        <div className="flex items-center gap-2 text-xs text-text-muted">
-          <span>{formatDate(event.date)}</span>
-          <span>·</span>
-          <span>{event.city}</span>
-        </div>
-        <h3 className="font-semibold text-text group-hover:text-neon-purple transition-colors line-clamp-2">
+      <div className="p-4">
+        <p className="text-[11px] tracking-[0.18em] text-neon-purple font-en">
+          {formatShort(event.date)} · {event.city}
+        </p>
+        <h3 className="mt-2 font-semibold leading-snug line-clamp-2 group-hover:text-neon-purple transition-colors">
           {event.title}
         </h3>
-        <p className="text-sm text-text-muted">{event.venue}</p>
-        {event.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 pt-1">
-            {event.tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className={`px-2 py-0.5 rounded-full text-xs ${EVENT_TAG_COLORS[tag]}`}
-              >
-                {EVENT_TAG_LABELS[tag]}
-              </span>
-            ))}
-          </div>
-        )}
+        <p className="mt-1.5 text-xs text-text-muted line-clamp-1">{event.venue}</p>
       </div>
     </Link>
   );

@@ -1,15 +1,43 @@
 import { supabase } from "@/lib/supabase";
 import { Event } from "@/lib/types";
-import EventCard from "./EventCard";
-import EventFilter from "./EventFilter";
+import EventBrowser from "./EventBrowser";
+import { FilterOption } from "./FilterDropdown";
 
 interface EventListProps {
   city?: string | null;
   tag?: string | null;
   month?: string | null;
+  q?: string | null;
 }
 
-export default async function EventList({ city, tag, month }: EventListProps) {
+/** 月份选项：当月起的连续 6 个月 + 「过往活动」归档（月份基准按业务时区 Asia/Shanghai） */
+function buildMonthOptions(): FilterOption[] {
+  const nowYM = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "2-digit",
+  });
+  let [y, m] = nowYM.split("-").map(Number);
+  const options: FilterOption[] = [{ value: "all", label: "全部" }];
+  for (let i = 0; i < 6; i++) {
+    const ym = `${y}-${String(m).padStart(2, "0")}`;
+    options.push({ value: ym, label: `${y}年${m}月` });
+    m += 1;
+    if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+  }
+  options.push({ value: "past", label: "过往活动" });
+  return options;
+}
+
+/** 搜索词消毒：去掉 PostgREST or() 语法和 ilike 通配特殊字符 */
+function sanitizeQuery(q: string): string {
+  return q.replace(/[%_,().\\]/g, "").trim().slice(0, 50);
+}
+
+export default async function EventList({ city, tag, month, q }: EventListProps) {
   const isPast = month === "past";
   let query = supabase
     .from("events")
@@ -35,6 +63,12 @@ export default async function EventList({ city, tag, month }: EventListProps) {
     const monthEnd = `${month}-${String(lastDay).padStart(2, "0")}`;
     query = query.gte("date", monthStart).lte("date", monthEnd);
   }
+  const keyword = q ? sanitizeQuery(q) : "";
+  if (keyword) {
+    query = query.or(
+      `title.ilike.%${keyword}%,venue.ilike.%${keyword}%,organizer.ilike.%${keyword}%`
+    );
+  }
 
   const { data: events, error } = await query;
 
@@ -46,26 +80,12 @@ export default async function EventList({ city, tag, month }: EventListProps) {
     );
   }
 
-  if (!events || events.length === 0) {
-    return (
-      <div className="space-y-8">
-        <EventFilter />
-        <div className="text-center py-16 text-text-muted">
-          <p className="text-lg">{isPast ? "暂无过往活动" : "该条件下暂无活动"}</p>
-          {!isPast && <p className="mt-2 text-sm">试试其他筛选条件，或者去提交一个新活动</p>}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-8">
-      <EventFilter />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {events.map((event: Event) => (
-          <EventCard key={event.id} event={event} />
-        ))}
-      </div>
-    </div>
+    <EventBrowser
+      events={(events ?? []) as Event[]}
+      current={{ city, tag, month, q }}
+      monthOptions={buildMonthOptions()}
+      isPastView={isPast}
+    />
   );
 }

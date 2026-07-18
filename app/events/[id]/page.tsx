@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventById } from "@/lib/queries";
-import { EVENT_TAG_LABELS, EVENT_TAG_COLORS } from "@/lib/types";
+import { EVENT_TAG_LABELS } from "@/lib/types";
 import PosterGallery from "@/components/events/PosterGallery";
 import QQGroupButton from "@/components/events/QQGroupButton";
 import AniROXBadge from "@/components/anirox/AniROXBadge";
@@ -12,115 +12,134 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+/** YYYY-MM-DD → { dot: '2026.07.19', weekday: '周六' }；weekday 按 UTC 计算避免时区串日 */
+function formatDateParts(dateStr: string) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const weekday = new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("zh-CN", {
+    weekday: "short",
+    timeZone: "UTC",
+  });
+  return { dot: `${y}.${String(m).padStart(2, "0")}.${String(d).padStart(2, "0")}`, weekday };
+}
+
 export default async function EventDetailPage({ params }: PageProps) {
   const { id } = await params;
   const event = await getEventById(id);
 
   if (!event) notFound();
 
-  const formattedDate = new Date(event.date).toLocaleDateString("zh-CN", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    weekday: "long",
-  });
+  const { dot, weekday } = formatDateParts(event.date);
+  const groups = event.qq_groups?.length
+    ? event.qq_groups
+    : event.qq_group
+      ? [event.qq_group]
+      : [];
+
+  const infoRows: { en: string; label: string; value: string }[] = [
+    { en: "DATE", label: "日期", value: `${dot} ${weekday}` },
+    ...(event.start_time
+      ? [{
+          en: "TIME",
+          label: "时间",
+          value: event.end_time
+            ? `${event.start_time.slice(0, 5)} - ${event.end_time.slice(0, 5)}`
+            : event.start_time.slice(0, 5),
+        }]
+      : []),
+    { en: "CITY", label: "城市", value: event.city },
+    { en: "VENUE", label: "场地", value: event.venue },
+    ...(event.address ? [{ en: "ADDRESS", label: "详细地址", value: event.address }] : []),
+    ...(event.ticket_price ? [{ en: "TICKET", label: "票价", value: event.ticket_price }] : []),
+    ...(event.organizer ? [{ en: "ORGANIZER", label: "主办方", value: event.organizer }] : []),
+  ];
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      {/* 返回 */}
-      <Link href="/events" className="text-sm text-text-muted hover:text-text mb-6 inline-block">
-        ← 返回活动列表
+    <div className="max-w-6xl mx-auto px-4 pt-10 pb-16 md:pt-14">
+      <Link
+        href="/events"
+        className="text-xs tracking-[0.25em] text-text-muted hover:text-neon-purple transition-colors"
+      >
+        ← <span className="font-en">EVENTS</span> 返回活动列表
       </Link>
 
-      {/* 海报画廊：主海报 + 同一活动的多版海报可切换，保留完整比例 */}
-      <PosterGallery
-        posters={[event.poster_url, ...(event.poster_urls ?? [])].filter((u): u is string => !!u)}
-        title={event.title}
-      />
-
-      {/* 标题区 */}
-      <div className="space-y-4 mb-8">
-        <div className="flex items-start gap-3 flex-wrap">
-          <h1 className="text-2xl md:text-3xl font-bold flex-1">{event.title}</h1>
-          {event.is_anirox && <AniROXBadge />}
-        </div>
-        <div className="flex flex-wrap gap-2">
+      {/* 标题区：黑色类型角标 + 大字标题 + 紫色 meta 行 */}
+      <header className="mt-10 text-center">
+        <div className="flex justify-center gap-2 flex-wrap">
           {event.tags.map((tag) => (
-            <span key={tag} className={`px-3 py-1 rounded-full text-xs ${EVENT_TAG_COLORS[tag]}`}>
+            <span key={tag} className="bg-white text-black text-[10px] tracking-[0.2em] px-2.5 py-1.5">
               {EVENT_TAG_LABELS[tag]}
             </span>
           ))}
         </div>
-      </div>
-
-      {/* 信息网格 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <InfoItem label="日期" value={formattedDate} icon="📅" />
-        {event.start_time && (
-          <InfoItem
-            label="时间"
-            value={event.end_time ? `${event.start_time.slice(0, 5)} - ${event.end_time.slice(0, 5)}` : event.start_time.slice(0, 5)}
-            icon="🕐"
-          />
+        <h1 className="mt-6 font-display text-3xl md:text-5xl leading-tight tracking-wide">
+          {event.title}
+        </h1>
+        {event.is_anirox && (
+          <div className="mt-4 flex justify-center">
+            <AniROXBadge />
+          </div>
         )}
-        <InfoItem label="城市" value={event.city} icon="📍" />
-        <InfoItem label="场地" value={event.venue} icon="🏟️" />
-        {event.address && <InfoItem label="详细地址" value={event.address} icon="🗺️" />}
-        {event.ticket_price && <InfoItem label="票价" value={event.ticket_price} icon="🎫" />}
-        {event.organizer && <InfoItem label="主办方" value={event.organizer} icon="👤" />}
-      </div>
+        <p className="mt-5 text-xs md:text-sm tracking-[0.3em] text-neon-purple font-en">
+          {dot} {weekday} · {event.city} · {event.venue}
+        </p>
+      </header>
 
-      {/* 描述 */}
-      {event.description && (
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">活动详情</h2>
-          <div className="text-text-muted leading-relaxed whitespace-pre-wrap">{event.description}</div>
-        </div>
-      )}
+      {/* 主体：海报 + 信息面板 */}
+      <div className="mt-12 md:mt-16 grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-10 lg:gap-14 items-start">
+        <PosterGallery
+          posters={[event.poster_url, ...(event.poster_urls ?? [])].filter((u): u is string => !!u)}
+          title={event.title}
+        />
 
-      {/* QQ 加群：多群逐条展示，群号自动转换为加群跳转 */}
-      {(() => {
-        const groups = event.qq_groups?.length
-          ? event.qq_groups
-          : event.qq_group
-            ? [event.qq_group]
-            : [];
-        if (groups.length === 0) return null;
-        return (
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold mb-3">交流群</h2>
-            <div className="space-y-3">
+        <div>
+          <dl>
+            {infoRows.map((row) => (
+              <div
+                key={row.en}
+                className="flex items-baseline justify-between gap-6 py-4 border-b border-bg-elevated"
+              >
+                <dt className="flex-none">
+                  <span className="block font-display text-sm tracking-[0.2em]">{row.en}</span>
+                  <span className="block mt-1 text-[10px] tracking-[0.25em] text-text-muted">{row.label}</span>
+                </dt>
+                <dd className="text-right text-sm leading-relaxed">{row.value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          {event.ticket_link && (
+            <a
+              href={event.ticket_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-8 block text-center px-6 py-3.5 rounded-full bg-gradient-to-r from-neon-purple to-neon-pink text-white font-medium tracking-widest hover:opacity-90 transition-opacity"
+            >
+              前往购票 →
+            </a>
+          )}
+
+          {groups.length > 0 && (
+            <div className="mt-8 space-y-3">
+              <p className="text-[10px] tracking-[0.3em] text-text-muted">交流群</p>
               {groups.map((g) => (
                 <QQGroupButton key={g} groupNumber={g} />
               ))}
             </div>
-          </div>
-        );
-      })()}
-
-      {/* 购票 */}
-      {event.ticket_link && (
-        <a
-          href={event.ticket_link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-neon-purple to-neon-pink text-white font-medium hover:opacity-90 transition-opacity"
-        >
-          🎟️ 前往购票
-        </a>
-      )}
-    </div>
-  );
-}
-
-function InfoItem({ label, value, icon }: { label: string; value: string; icon: string }) {
-  return (
-    <div className="bg-bg-card border border-bg-elevated rounded-xl p-4 flex items-start gap-3">
-      <span className="text-lg">{icon}</span>
-      <div>
-        <p className="text-xs text-text-muted">{label}</p>
-        <p className="font-medium mt-0.5">{value}</p>
+          )}
+        </div>
       </div>
+
+      {/* 详情 */}
+      {event.description && (
+        <section className="mt-16 md:mt-20 max-w-3xl mx-auto">
+          <div className="text-center">
+            <h2 className="font-display text-2xl md:text-3xl tracking-wider">DETAILS</h2>
+            <p className="mt-2 text-[11px] tracking-[0.45em] text-text-muted">活 动 详 情</p>
+            <div className="mx-auto mt-4 h-px w-11 bg-gradient-to-r from-neon-purple to-neon-pink" />
+          </div>
+          <div className="mt-8 text-text-muted leading-loose whitespace-pre-wrap">{event.description}</div>
+        </section>
+      )}
     </div>
   );
 }
