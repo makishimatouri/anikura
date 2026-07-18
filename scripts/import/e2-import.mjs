@@ -2,9 +2,11 @@
 // 用法：node scripts/import/e2-import.mjs [--dry-run] [--force]
 // 安全：默认先查批次是否已存在，存在即中止（--force 跳过）
 import { adminClient, SUPABASE_URL } from "./db.mjs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { readFileSync } from "node:fs";
 
-const OUT = "/Users/edy/Documents/cnanikura网站/backups/20260718-bulk-import";
+const OUT = process.env.ANIKURA_BACKUP_DIR ?? join(homedir(), "Documents", "cnanikura网站", "backups", "20260718-bulk-import");
 const SRC = "/tmp/wall-optimized";
 const DRY = process.argv.includes("--dry-run");
 const FORCE = process.argv.includes("--force");

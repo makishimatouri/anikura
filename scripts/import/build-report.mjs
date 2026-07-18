@@ -1,11 +1,15 @@
 // 汇总 reading.jsonl → import-report.json + summary.md
 // 应用合并关系、状态规则、归档目录规则（决策1）
 import { readFileSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { loadEnv } from "./db.mjs";
 
-const OUT = "/Users/edy/Documents/cnanikura网站/backups/20260718-bulk-import";
+const OUT = process.env.ANIKURA_BACKUP_DIR ?? join(homedir(), "Documents", "cnanikura网站", "backups", "20260718-bulk-import");
 const TODAY = "2026-07-18"; // Asia/Shanghai 业务今日
 const BATCH = "2026-07-folder-58";
-const OWNER_ID = "d36758a5-8302-417c-a93b-06c56308e91c"; // 东离（超管）
+const OWNER_ID = loadEnv().IMPORT_OWNER_ID; // 超管账号 id 存 .env.local，不进仓库
+if (!OWNER_ID) { console.error("缺少 IMPORT_OWNER_ID（.env.local）"); process.exit(1); }
 
 const lines = readFileSync(`${OUT}/reading.jsonl`, "utf8").trim().split("\n").map(JSON.parse);
 const byFile = Object.fromEntries(lines.map((l) => [l.file, l]));

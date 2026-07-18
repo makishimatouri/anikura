@@ -1,8 +1,10 @@
 // E0：导出 events 全量快照到仓库外备份目录
 import { adminClient } from "./db.mjs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { writeFileSync } from "node:fs";
 
-const OUT = "/Users/edy/Documents/cnanikura网站/backups/20260718-bulk-import";
+const OUT = process.env.ANIKURA_BACKUP_DIR ?? join(homedir(), "Documents", "cnanikura网站", "backups", "20260718-bulk-import");
 const sb = adminClient();
 
 const { data: events, error } = await sb.from("events").select("*");
