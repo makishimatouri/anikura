@@ -128,6 +128,17 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
+      <a
+        href="https://gray.anikura.cn/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block mb-6 rounded-xl border border-pink-300/40 bg-pink-300/10 px-5 py-4 hover:bg-pink-300/20 transition-colors"
+      >
+        <div className="font-bold">新版内测入口 → gray.anikura.cn</div>
+        <div className="text-sm text-text-muted mt-1">
+          改版后的新站已就绪，点这里进入灰度环境体验。灰度站与正式站登录状态不互通，需要用管理员账号重新登录一次。发现问题请在群里反馈，确认无误后全量上线。
+        </div>
+      </a>
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold">超级管理面板</h1>
