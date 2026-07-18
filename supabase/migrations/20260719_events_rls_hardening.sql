@@ -49,3 +49,15 @@ CREATE POLICY auth_delete ON public.events
       WHERE id = auth.uid() AND (is_admin OR is_super_admin)
     )
   );
+
+-- ============================================================
+-- 回滚 SQL（执行后如需还原，整段复制到 Management API 执行）：
+-- DROP POLICY IF EXISTS anon_read ON public.events;
+-- DROP POLICY IF EXISTS auth_read ON public.events;
+-- DROP POLICY IF EXISTS auth_update ON public.events;
+-- DROP POLICY IF EXISTS auth_delete ON public.events;
+-- CREATE POLICY anon_read ON public.events FOR SELECT TO public USING (true);
+-- CREATE POLICY auth_update ON public.events FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+-- CREATE POLICY auth_delete ON public.events FOR DELETE TO authenticated USING (true);
+-- （auth_insert 本迁移未改动，无需恢复）
+-- ============================================================
