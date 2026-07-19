@@ -8,7 +8,7 @@ import { Event, EventTag, EventStatus } from "@/lib/types";
 const ALL_TAGS: EventTag[] = ["anikura", "bokakura", "touhou", "vocaloid", "game", "vtuber"];
 const TAG_LABELS: Record<EventTag, string> = {
   anikura: "动漫歌曲",
-  bokakura: "Vocaloid",
+  bokakura: "Vocaloid DJ",
   touhou: "东方 Project",
   vocaloid: "Vocaloid",
   game: "游戏音乐",
@@ -478,7 +478,11 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
               type="button"
               onClick={async () => {
                 if (!confirm("确认通过该活动？")) return;
-                await supabase.from("events").update({ review_status: "approved" }).eq("id", initialData.id);
+                const { error } = await supabase.from("events").update({ review_status: "approved" }).eq("id", initialData.id);
+                if (error) {
+                  alert("审核操作失败：" + error.message);
+                  return;
+                }
                 router.push("/admin/dashboard");
                 router.refresh();
               }}
@@ -491,10 +495,14 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
               onClick={async () => {
                 const reason = prompt("驳回原因（可选，将记录到审核备注）：");
                 if (reason === null) return;
-                await supabase
+                const { error } = await supabase
                   .from("events")
                   .update({ review_status: "rejected", review_note: reason || null })
                   .eq("id", initialData.id);
+                if (error) {
+                  alert("驳回操作失败：" + error.message);
+                  return;
+                }
                 router.push("/admin/dashboard");
                 router.refresh();
               }}

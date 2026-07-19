@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { todayShanghai } from "@/lib/date";
 import SectionHead from "@/components/home/SectionHead";
 import Reveal from "@/components/ui/Reveal";
 
@@ -17,7 +18,7 @@ export default function CheckinPage() {
   const [session, setSession] = useState<boolean | null>(null);
 
   async function loadStatus(uid: string) {
-    const today = new Date().toISOString().split("T")[0];
+    const today = todayShanghai();
     const { data: checkin } = await supabase
       .from("checkins")
       .select("points_earned")
@@ -57,57 +58,32 @@ export default function CheckinPage() {
     const {
       data: { session },
     } = await supabase.auth.getSession();
-    if (!session) return;
+    if (!session) {
+      setLoading(false);
+      return;
+    }
 
-    const today = new Date().toISOString().split("T")[0];
-    // 计算连续签到
-    const yesterday = new Date(Date.now() - 86400000)
-      .toISOString()
-      .split("T")[0];
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, email, total_points, checkin_streak, last_checkin_date")
-      .eq("id", session.user.id)
-      .single();
+    // 签到逻辑在数据库 RPC 内单事务完成：业务日期按 Asia/Shanghai 判定，
+    // 并发/重复点击由行锁兜底，不会出现积分不一致
+    const { data, error } = await supabase.rpc("perform_checkin");
 
-    const isConsecutive =
-      profile?.last_checkin_date === yesterday ||
-      profile?.last_checkin_date === today;
-    const newStreak =
-      profile?.last_checkin_date === today
-        ? profile.checkin_streak
-        : isConsecutive
-          ? (profile?.checkin_streak ?? 0) + 1
-          : 1;
+    if (error) {
+      alert("签到失败，请稍后重试：" + error.message);
+      setLoading(false);
+      return;
+    }
 
-    const earned = Math.floor(Math.random() * 16) + 5;
-    const bonus = newStreak >= 7 && newStreak % 7 === 0 ? 10 : 0;
-
-    const { error } = await supabase.from("checkins").insert({
-      user_id: session.user.id,
-      checkin_date: today,
-      points_earned: earned,
-    });
-    if (!error) {
-      await supabase.from("point_transactions").insert({
-        user_id: session.user.id,
-        amount: earned + bonus,
-        type: "checkin",
-        description: `每日签到${bonus > 0 ? ` (连续${newStreak}天奖励)` : ""}`,
-      });
-      await supabase
-        .from("profiles")
-        .update({
-          checkin_streak: newStreak,
-          last_checkin_date: today,
-          total_points: (profile?.total_points ?? 0) + earned + bonus,
-        })
-        .eq("id", session.user.id);
-
-      setCheckedIn(true);
-      setStreak(newStreak);
-      setTotalPoints((profile?.total_points ?? 0) + earned + bonus);
-      setResult({ points: earned + bonus, streak: newStreak });
+    const r = data as {
+      already: boolean;
+      points?: number;
+      streak: number;
+      total_points: number;
+    };
+    setCheckedIn(true);
+    setStreak(r.streak ?? 0);
+    setTotalPoints(r.total_points ?? 0);
+    if (!r.already) {
+      setResult({ points: r.points ?? 0, streak: r.streak ?? 0 });
     }
     setLoading(false);
   }

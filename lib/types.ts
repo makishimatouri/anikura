@@ -56,7 +56,7 @@ export interface AdminEvent extends Event {
 
 export const EVENT_TAG_LABELS: Record<EventTag, string> = {
   anikura: "动漫歌曲",
-  bokakura: "Vocaloid",
+  bokakura: "Vocaloid DJ",
   touhou: "东方 Project",
   vocaloid: "Vocaloid",
   game: "游戏音乐",

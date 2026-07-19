@@ -41,9 +41,10 @@ export default function NotificationsPage() {
     setNotifs(data ?? []);
     setLoading(false);
 
-    // 自动标记全部已读
+    // 自动标记全部已读（失败不打断浏览，仅记录）
     if (data && data.some((n) => !n.is_read)) {
-      await supabase.from("notifications").update({ is_read: true }).eq("user_id", session.user.id).eq("is_read", false);
+      const { error } = await supabase.from("notifications").update({ is_read: true }).eq("user_id", session.user.id).eq("is_read", false);
+      if (error) console.error("标记已读失败:", error.message);
     }
   }
 

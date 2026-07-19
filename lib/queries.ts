@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { todayShanghai } from "./date";
 import { Event } from "./types";
 
 export async function getFeaturedEvents(): Promise<Event[]> {
@@ -34,7 +35,7 @@ export async function getUpcomingEvents(limit = 9): Promise<Event[]> {
     .select("*")
     .eq("status", "ongoing")
     .eq("review_status", "approved")
-    .gte("date", new Date().toISOString().split("T")[0])
+    .gte("date", todayShanghai())
     .order("is_anirox", { ascending: false })
     .order("date", { ascending: true })
     .limit(limit);

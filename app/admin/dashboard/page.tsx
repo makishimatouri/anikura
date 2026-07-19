@@ -86,16 +86,23 @@ export default function AdminDashboardPage() {
 
   async function handleApproveReview(id: string) {
     if (!confirm("确认通过该活动？")) return;
-    await supabase.from("events").update({ review_status: "approved" }).eq("id", id);
+    const { error: updateError } = await supabase.from("events").update({ review_status: "approved" }).eq("id", id);
+    if (updateError) {
+      alert("审核操作失败：" + updateError.message);
+      return;
+    }
     const { data: event } = await supabase.from("events").select("created_by, title").eq("id", id).single();
     if (event?.created_by) {
-      await supabase.from("notifications").insert({
+      const { error: notifyError } = await supabase.from("notifications").insert({
         user_id: event.created_by,
         type: "event_approved",
         title: "活动审核通过",
         message: `你的活动「${event.title}」已通过审核并上线`,
         reference_id: id,
       });
+      if (notifyError) {
+        alert("审核已通过，但通知发送失败：" + notifyError.message);
+      }
     }
     loadStats(true);
   }
@@ -103,16 +110,23 @@ export default function AdminDashboardPage() {
   async function handleRejectReview(id: string) {
     const reason = prompt("未通过原因（可选，将通知提交者）：");
     if (reason === null) return;
-    await supabase.from("events").update({ review_status: "rejected", review_note: reason || null }).eq("id", id);
+    const { error: updateError } = await supabase.from("events").update({ review_status: "rejected", review_note: reason || null }).eq("id", id);
+    if (updateError) {
+      alert("驳回操作失败：" + updateError.message);
+      return;
+    }
     const { data: event } = await supabase.from("events").select("created_by, title").eq("id", id).single();
     if (event?.created_by) {
-      await supabase.from("notifications").insert({
+      const { error: notifyError } = await supabase.from("notifications").insert({
         user_id: event.created_by,
         type: "event_rejected",
         title: "活动审核未通过",
         message: `你的活动「${event.title}」未通过审核${reason ? "，原因：" + reason : ""}`,
         reference_id: id,
       });
+      if (notifyError) {
+        alert("已驳回，但通知发送失败：" + notifyError.message);
+      }
     }
     loadStats(true);
   }

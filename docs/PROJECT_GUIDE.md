@@ -2,7 +2,7 @@
 
 ## 状态快照
 
-最后核对：2026-07-17，Asia/Shanghai。
+最后核对：2026-07-19，Asia/Shanghai（本轮同步了版本与分支状态；「本轮验证结果」一节仍为 2026-07-17 的探测快照，未重新探测）。
 
 以下内容以当前仓库、当前线上只读探测和项目已有记录为依据。线上控制台内部配置没有在本轮登录复核，涉及“历史确认”的部分不能替代控制台检查。
 
@@ -11,8 +11,8 @@
 | GitHub 仓库 | `makishimatouri/anikura` |
 | 远端协议 | SSH：`git@github.com:makishimatouri/anikura.git` |
 | 默认分支 | `main` |
-| 当前代码版本 | `package.json` 为 `0.1.54`；正式产品 tag 仍为 `v0.1.54`，其后 `main` 增加了文档合并提交 |
-| 当前主线状态 | `main` 已包含文档维护提交；具体 PR 和 HEAD 以 GitHub 与 `git log --oneline -1` 实时查询为准 |
+| 当前代码版本 | `main` 正式 tag 为 `v0.3.1`；开发分支 `codex/auth-email-flow` 上 `package.json` 为 `0.3.3`（前端重构 Phase 2–4 + 注册邮件流程，未合并） |
+| 当前主线状态 | `main` HEAD 为 `346c833`（注册确认邮件链路修复，v0.3.1）；后续 HEAD 以 GitHub 与 `git log --oneline -1` 实时查询为准 |
 | 技术栈 | Next.js 16 App Router、React 19、TypeScript、Tailwind CSS 4、Supabase |
 | 线上域名 | `anikura.cn`、`www.anikura.cn` |
 | 线上链路 | GoDaddy 注册域名，Cloudflare 提供权威 DNS/CDN/TLS，Vercel 承载应用，Supabase 承载数据、认证和图片存储 |

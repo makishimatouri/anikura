@@ -73,51 +73,28 @@ export default function PointsShopPage() {
       alert("库存不足");
       return;
     }
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("total_points")
-      .eq("id", (await supabase.auth.getSession()).data.session!.user.id)
-      .single();
-    if (!profile || profile.total_points < reward.points_cost) {
-      alert("积分不足");
+
+    // 兑换在数据库 RPC 内单事务完成：余额与库存按行锁内最新值扣减，
+    // 并发下不会扣负或超卖
+    const { data, error } = await supabase.rpc("redeem_reward", {
+      p_reward_id: reward.id,
+    });
+
+    if (error) {
+      const msg = error.message || "";
+      if (msg.includes("insufficient_points")) alert("积分不足");
+      else if (msg.includes("out_of_stock")) alert("库存不足");
+      else if (msg.includes("reward_inactive")) alert("该奖励已下架");
+      else alert("兑换失败，请稍后重试：" + msg);
       return;
     }
 
+    const r = data as { code: string; points_spent: number };
+    alert(`兑换成功！券码：${r.code}`);
     const {
       data: { session: sess },
     } = await supabase.auth.getSession();
-    const code = `ANI-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
-
-    const { error } = await supabase.from("redemptions").insert({
-      user_id: sess!.user.id,
-      reward_id: reward.id,
-      points_spent: reward.points_cost,
-      code,
-    });
-    if (error) {
-      alert("兑换失败：" + error.message);
-      return;
-    }
-
-    await supabase
-      .from("profiles")
-      .update({ total_points: profile.total_points - reward.points_cost })
-      .eq("id", sess!.user.id);
-    await supabase.from("point_transactions").insert({
-      user_id: sess!.user.id,
-      amount: -reward.points_cost,
-      type: "redeem",
-      description: `兑换优惠券: ${reward.title}`,
-      reference_id: reward.id,
-    });
-    if (reward.stock !== null) {
-      await supabase
-        .from("rewards")
-        .update({ stock: reward.stock - 1 })
-        .eq("id", reward.id);
-    }
-    alert(`兑换成功！券码：${code}`);
-    loadData(sess!.user.id);
+    if (sess) loadData(sess.user.id);
   }
 
   if (session === null) {

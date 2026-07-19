@@ -11,7 +11,7 @@ const CITIES = ["上海", "北京", "广州", "深圳", "杭州", "成都", "武
 const TAG_OPTIONS: FilterOption[] = [
   { value: "all", label: "全部" },
   { value: "anikura", label: "动漫歌曲" },
-  { value: "bokakura", label: "Vocaloid" },
+  { value: "bokakura", label: "Vocaloid DJ" },
   { value: "touhou", label: "东方" },
   { value: "game", label: "游戏音乐" },
   { value: "vtuber", label: "VTuber" },
