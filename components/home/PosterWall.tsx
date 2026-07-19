@@ -24,14 +24,20 @@ function formatDate(dateStr: string): string {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 }
 
-function EventTile({ event }: { event: Event }) {
+function EventTile({ event, eager = false }: { event: Event; eager?: boolean }) {
   return (
     <Link
       href={`/events/${event.id}`}
       className="wall-tile relative block h-full flex-none overflow-hidden"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={event.poster_url!} alt={event.title} loading="lazy" className="wall-tile-img" />
+      <img
+        src={event.poster_url!}
+        alt={event.title}
+        loading={eager ? "eager" : "lazy"}
+        decoding="async"
+        className="wall-tile-img"
+      />
       <div className="wall-plate">
         <p className="text-[13px] font-semibold tracking-wide">{event.title}</p>
         <p className="mt-1 text-[10px] tracking-[0.18em] text-neon-purple">
@@ -92,7 +98,8 @@ export default function PosterWall({ events }: PosterWallProps) {
           <Marquee duration={ROW_DURATION[row]} reverse={row === 1}>
             {tiles.map((tile, i) => {
               const key = `${row}-${i}`;
-              if (tile.kind === "event") return <EventTile key={key} event={tile.event} />;
+              // 第一行透过 Hero 镂空字母立即可见，走 eager；其余行懒加载
+              if (tile.kind === "event") return <EventTile key={key} event={tile.event} eager={row === 0} />;
               return <PlaceholderTile key={key} index={row * TILES_PER_ROW + i} />;
             })}
           </Marquee>

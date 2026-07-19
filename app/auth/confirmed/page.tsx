@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import SectionHead from "@/components/home/SectionHead";
+import Reveal from "@/components/ui/Reveal";
 
 export default function ConfirmedPage() {
   const [errorDesc, setErrorDesc] = useState("");
@@ -39,13 +41,16 @@ export default function ConfirmedPage() {
   }
 
   if (!checked) {
-    return <div className="min-h-[70vh]" />;
+    return <div className="min-h-[50vh]" />;
   }
 
   if (errorDesc) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center px-4">
-        <div className="w-full max-w-sm text-center space-y-4">
+      <div className="max-w-sm mx-auto px-4 pt-14 pb-16 md:pt-20">
+        <Reveal>
+          <SectionHead en="EXPIRED" cn="链 接 失 效" />
+        </Reveal>
+        <div className="mt-10 text-center space-y-4">
           <div className="text-5xl">⚠️</div>
           <h1 className="text-2xl font-bold">链接已失效</h1>
           <p className="text-text-muted">
@@ -89,8 +94,11 @@ export default function ConfirmedPage() {
   }
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center px-4">
-      <div className="w-full max-w-sm text-center space-y-4">
+    <div className="max-w-sm mx-auto px-4 pt-14 pb-16 md:pt-20">
+      <Reveal>
+        <SectionHead en="WELCOME" cn="确 认 成 功" />
+      </Reveal>
+      <div className="mt-10 text-center space-y-4">
         <div className="text-5xl">✅</div>
         <h1 className="text-2xl font-bold">邮箱确认成功</h1>
         <p className="text-text-muted">

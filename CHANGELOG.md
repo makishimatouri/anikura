@@ -2,6 +2,21 @@
 
 本项目从 `v0.1.0` 开始按正式版本留档。所有上线版本都应有 Git tag，并在本文件记录用户可见变化。
 
+## v0.3.3 - 2026-07-19
+
+前端重构 Phase 4（其余页面统一 + 移动端验收 + 性能打磨，改版线收官）。
+
+- 全站页面统一 TIS 风骨架：ABOUT / CONTACT / AniROX / CHECK-IN / POINTS / NOTICE / LOGIN / JOIN / EXPIRED / WELCOME 章节头（Anton 英文大标题 + 中文小字 + 渐变短划线），滚动淡入统一接入
+- /about 更新日志改为真实版本线（v0.1.0 基线 / v0.2.0 骨架 / v0.3.x 改版线），移除旧手写占位条目
+- /contact 联系方式卡片改为 EN 标签行样式，提交信息清单保留
+- /anirox 页头改居中渐变厂牌大字，简介去重，活动网格加密至 2/3/4 列；修复该页 `<img>` lint warning
+- /checkin 连续签到与总积分改 Anton 大数字卡片；未登录态统一
+- /points 新增"我的积分"大数字卡片，Tab 改下划线切换样式；未登录态统一
+- /notifications 修复未登录一直"加载中"的问题，新增未登录引导态
+- 404 页改 Anton 巨字渐变 + 中文小字
+- 性能：Anton 字体 preload、Supabase Storage 域名 preconnect、海报墙首行（透过 Hero 镂空立即可见）改 eager 加载并加 decoding=async
+- 移动端 390px 全页面截图验收：版式无溢出；AniROX 页头 logo 与导航栏厂牌 logo 去重
+
 ## v0.3.2 - 2026-07-19
 
 前端重构 Phase 3（/events 列表页 + 活动详情页，TIS 风）。

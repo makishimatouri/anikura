@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import SectionHead from "@/components/home/SectionHead";
+import Reveal from "@/components/ui/Reveal";
 
 interface Reward {
   id: string;
@@ -27,7 +29,7 @@ export default function PointsShopPage() {
   const [coupons, setCoupons] = useState<Reward[]>([]);
   const [lotteries, setLotteries] = useState<LotteryEvent[]>([]);
   const [totalPoints, setTotalPoints] = useState(0);
-  const [session, setSession] = useState<boolean>(false);
+  const [session, setSession] = useState<boolean | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -118,48 +120,67 @@ export default function PointsShopPage() {
     loadData(sess!.user.id);
   }
 
+  if (session === null) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 pt-14 pb-16 md:pt-20">
+        <SectionHead en="POINTS" cn="积 分 商 城" />
+        <p className="text-center text-text-muted py-10 mt-12">加载中…</p>
+      </div>
+    );
+  }
+
   if (!session) {
     return (
-      <div className="max-w-md mx-auto px-4 py-16 text-center">
-        <p className="text-text-muted mb-4">请先登录后查看积分商城</p>
-        <Link
-          href="/auth/login"
-          className="inline-block px-6 py-2.5 rounded-full bg-gradient-to-r from-neon-purple to-neon-pink text-white font-medium"
-        >
-          去登录
-        </Link>
+      <div className="max-w-md mx-auto px-4 pt-14 pb-16 md:pt-20">
+        <Reveal>
+          <SectionHead en="POINTS" cn="积 分 商 城" />
+        </Reveal>
+        <div className="mt-12 text-center">
+          <p className="text-text-muted mb-6">请先登录后查看积分商城</p>
+          <Link
+            href="/auth/login"
+            className="inline-block px-6 py-2.5 rounded-full bg-gradient-to-r from-neon-purple to-neon-pink text-white font-medium"
+          >
+            去登录
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">积分商城</h1>
-        <div className="text-sm text-text-muted">
-          我的积分：{" "}
-          <span className="text-neon-pink font-bold text-lg">{totalPoints}</span>
-        </div>
-      </div>
+    <div className="max-w-2xl mx-auto px-4 pt-14 pb-16 md:pt-20">
+      <Reveal>
+        <SectionHead en="POINTS" cn="积 分 商 城" />
+      </Reveal>
+
+      <div className="mt-12 md:mt-14">
+        {/* 我的积分 */}
+        <Reveal>
+          <div className="bg-bg-card border border-bg-elevated rounded-xl p-5 mb-8 text-center">
+            <p className="font-display text-4xl leading-none text-neon-pink">{totalPoints}</p>
+            <p className="mt-2 text-[11px] tracking-[0.25em] text-text-muted">我的积分</p>
+          </div>
+        </Reveal>
 
       {/* Tab */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex justify-center mb-8 border-b border-bg-elevated">
         <button
           onClick={() => setTab("coupon")}
-          className={`px-4 py-2 rounded-full text-sm ${
+          className={`px-5 py-3 text-sm tracking-widest border-b-2 -mb-px transition-colors ${
             tab === "coupon"
-              ? "bg-neon-purple text-white"
-              : "bg-bg-elevated text-text-muted"
+              ? "border-neon-purple text-neon-purple"
+              : "border-transparent text-text-muted hover:text-text"
           }`}
         >
           优惠券兑换
         </button>
         <button
           onClick={() => setTab("lottery")}
-          className={`px-4 py-2 rounded-full text-sm ${
+          className={`px-5 py-3 text-sm tracking-widest border-b-2 -mb-px transition-colors ${
             tab === "lottery"
-              ? "bg-neon-pink text-white"
-              : "bg-bg-elevated text-text-muted"
+              ? "border-neon-pink text-neon-pink"
+              : "border-transparent text-text-muted hover:text-text"
           }`}
         >
           活动门票抽奖
@@ -241,10 +262,11 @@ export default function PointsShopPage() {
         </div>
       )}
 
-      <div className="mt-10 text-center">
-        <Link href="/checkin" className="text-sm text-neon-purple hover:underline">
-          ← 返回签到赚积分
-        </Link>
+        <div className="mt-10 text-center">
+          <Link href="/checkin" className="text-sm text-neon-purple hover:underline">
+            ← 返回签到赚积分
+          </Link>
+        </div>
       </div>
     </div>
   );

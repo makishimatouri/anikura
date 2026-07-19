@@ -55,9 +55,22 @@ export default async function RootLayout({
     }
   }
 
+  // 性能：首屏标题依赖 Anton，提前加载；Storage 图源提前建连（React 19 会把 link 提升到 head）
+  const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL
+    ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin
+    : null;
+
   return (
     <html lang="zh-CN">
       <body className="min-h-screen flex flex-col">
+        <link
+          rel="preload"
+          href="/fonts/anton-400.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        {supabaseOrigin && <link rel="preconnect" href={supabaseOrigin} crossOrigin="anonymous" />}
         <LoadingCover />
         <Navbar />
         <main className="flex-1 pt-14">{children}</main>
