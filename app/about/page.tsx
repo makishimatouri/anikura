@@ -108,7 +108,7 @@ export default function AboutPage() {
                 date="2026-07-19"
                 version="v0.3.3"
                 items={[
-                  "前端重构收官：全站页面统一 TIS 风版式",
+                  "前端重构收官：全站页面统一新版式",
                   "移动端整站验收与性能打磨",
                 ]}
               />
@@ -125,7 +125,7 @@ export default function AboutPage() {
                 date="2026-07-17"
                 version="v0.2.0"
                 items={[
-                  "TIS 风全局骨架上线：抽屉菜单、加载遮罩、页面转场",
+                  "全局骨架上线：抽屉菜单、加载遮罩、页面转场",
                   "自托管展示字体与设计地基",
                 ]}
               />
