@@ -2,7 +2,7 @@
 
 ## 状态快照
 
-最后核对：2026-07-19，Asia/Shanghai（本轮同步了版本与分支状态；「本轮验证结果」一节仍为 2026-07-17 的探测快照，未重新探测）。
+最后核对：2026-07-24，Asia/Shanghai（v0.3.3 全量发布收口；「线上只读探测」仍保留此前快照，发布后结果以本轮交付记录为准）。
 
 以下内容以当前仓库、当前线上只读探测和项目已有记录为依据。线上控制台内部配置没有在本轮登录复核，涉及“历史确认”的部分不能替代控制台检查。
 
@@ -11,8 +11,8 @@
 | GitHub 仓库 | `makishimatouri/anikura` |
 | 远端协议 | SSH：`git@github.com:makishimatouri/anikura.git` |
 | 默认分支 | `main` |
-| 当前代码版本 | `main` 正式 tag 为 `v0.3.1`；开发分支 `codex/auth-email-flow` 上 `package.json` 为 `0.3.3`（前端重构 Phase 2–4 + 注册邮件流程，未合并） |
-| 当前主线状态 | `main` HEAD 为 `346c833`（注册确认邮件链路修复，v0.3.1）；后续 HEAD 以 GitHub 与 `git log --oneline -1` 实时查询为准 |
+| 当前代码版本 | `v0.3.3`：前端重构 Phase 2–4、注册邮件流程、时区与签到兑换原子化修复正式收口 |
+| 当前主线状态 | `main` 已完成 v0.3.3 全量发布；具体 HEAD 以 GitHub 与 `git log --oneline -1` 实时查询为准 |
 | 技术栈 | Next.js 16 App Router、React 19、TypeScript、Tailwind CSS 4、Supabase |
 | 线上域名 | `anikura.cn`、`www.anikura.cn` |
 | 线上链路 | GoDaddy 注册域名，Cloudflare 提供权威 DNS/CDN/TLS，Vercel 承载应用，Supabase 承载数据、认证和图片存储 |
@@ -21,10 +21,10 @@
 
 ### 本地仓库
 
-- 文档改造开始前，`main` 与 `origin/main` 一致，工作区没有未提交业务代码改动；文档相关 PR 已合并到 `main`，具体历史以 GitHub 和当前 Git 状态为准。
+- v0.3.3 发布候选从 `main` 直接演进，发布前满足 fast-forward 条件，工作区没有未提交业务代码改动。
 - `npm run check`：通过。
   - `typecheck`：通过。
-  - `lint`：0 个 error，2 个 `<img>` 性能 warning。
+  - `lint`：通过，0 个 error。
   - `build`：通过；另有 Next.js 对 `middleware` 文件约定弃用的 warning。
 
 ### 线上只读探测
@@ -59,6 +59,7 @@
 - `v0.1.1` 是仓库文档、检查和协作规范化版本。
 - `v0.1.2` 至 `v0.1.54` 保留了功能、移动端和文案调整历史。
 - `v0.3.0` 仍保留在 Git 历史中，但属于开发阶段误命名，不是正式版本线。
+- `v0.3.3` 是前端重构线首次正式全量生产版本；tag、package.json、CHANGELOG 和 GitHub Release 必须保持一致。
 - 文档维护 PR 已建立基础维护文档、长期更新规范、状态快照修正和生产 schema 核对记录；这些都是文档提交，不改变正式产品版本号。具体 PR 编号以 GitHub 历史为准。
 - `.github/workflows/ci.yml` 当前在 `main` 的 push 和 PR 上执行 `typecheck`、`lint`；本地发布门禁 `npm run check` 还包括 build，二者不要混为一谈。
 
@@ -105,7 +106,7 @@
 
 ```text
 先读 AGENTS.md、docs/PROJECT_GUIDE.md、docs/OPERATIONS.md。
-当前正式版本是 v0.1.54；不要把 v0.3.0 当作版本线。
+当前正式版本是 v0.3.3；历史误命名的 v0.3.0 tag 不作为版本线依据。
 先执行 git status --short --branch 和 npm run check。
 本轮先做只读检查或独立分支修改，不碰 Supabase 数据、RLS、DNS、Vercel 环境变量。
 完成后按“事实 / 推断 / 待确认 / 文件 / 验证 / 风险”输出；有计算时逐项列公式、输入、中间值和结果。
