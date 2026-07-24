@@ -12,7 +12,9 @@ await db.exec(`
   create role service_role;
   create schema auth;
   create table auth.users (id uuid primary key default gen_random_uuid());
-  create function auth.uid() returns uuid language sql stable as $$ select null::uuid $$;
+  create function auth.uid() returns uuid language sql stable as $$
+    select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
+  $$;
   create table public.profiles (
     id uuid primary key references auth.users(id),
     email text,
@@ -136,6 +138,40 @@ const commands = await db.query(`
     and routine_name in ('admin_create_event_draft', 'admin_review_publish_event')
 `);
 assert.equal(commands.rows.length, 2);
+
+const ordinaryId = "00000000-0000-0000-0000-000000000001";
+const editorId = "00000000-0000-0000-0000-000000000002";
+const reviewerId = "00000000-0000-0000-0000-000000000003";
+await db.query(`insert into auth.users (id) values ($1), ($2), ($3)`, [ordinaryId, editorId, reviewerId]);
+await db.query(`insert into public.profiles (id) values ($1), ($2), ($3)`, [ordinaryId, editorId, reviewerId]);
+await db.query(`insert into public.admin_memberships (user_id) values ($1), ($2)`, [editorId, reviewerId]);
+await db.query(`insert into public.admin_membership_roles (user_id, role) values ($1, 'information_entry'), ($2, 'review_publisher')`, [editorId, reviewerId]);
+
+await db.query(`select set_config('request.jwt.claim.sub', $1, false)`, [ordinaryId]);
+await db.exec("savepoint ordinary_denied");
+await assert.rejects(
+  db.query(`select public.admin_create_event_draft($1::jsonb)`, [{ title: "伪造活动", date: "2026-08-01", city: "上海", venue: "测试场地" }]),
+  /forbidden/
+);
+await db.exec("rollback to savepoint ordinary_denied");
+
+await db.query(`select set_config('request.jwt.claim.sub', $1, false)`, [editorId]);
+const created = await db.query(`select public.admin_create_event_draft($1::jsonb) as id`, [{
+  title: "受控活动", date: "2026-08-02", city: "上海", venue: "测试场地",
+  created_by: ordinaryId, review_status: "approved", is_featured: true,
+}]);
+const eventId = created.rows[0].id;
+const securedEvent = await db.query(`select created_by, review_status, is_featured from public.events where id = $1`, [eventId]);
+assert.deepEqual(securedEvent.rows, [{ created_by: editorId, review_status: "pending", is_featured: false }]);
+const securedRevision = await db.query(`select created_by, state, payload ? 'created_by' as has_creator, payload ? 'review_status' as has_review from public.event_revisions where event_id = $1`, [eventId]);
+assert.deepEqual(securedRevision.rows, [{ created_by: editorId, state: "draft", has_creator: false, has_review: false }]);
+
+await db.query(`select set_config('request.jwt.claim.sub', $1, false)`, [reviewerId]);
+await db.query(`select public.admin_review_publish_event($1::uuid, null)`, [eventId]);
+const published = await db.query(`select review_status, published_revision_id is not null as has_revision from public.events where id = $1`, [eventId]);
+assert.deepEqual(published.rows, [{ review_status: "approved", has_revision: true }]);
+const notification = await db.query(`select user_id from public.notifications where reference_id = $1`, [eventId]);
+assert.deepEqual(notification.rows, [{ user_id: editorId }]);
 
 await db.exec("rollback");
 console.log("Admin migration dry-run passed in isolated PGlite transaction (rolled back).");

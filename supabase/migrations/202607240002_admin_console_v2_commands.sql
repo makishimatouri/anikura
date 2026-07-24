@@ -42,6 +42,19 @@ begin
     'pending', actor, 'manual', false, false, now(), now()
   ) returning id into new_event_id;
 
+  insert into public.event_revisions (
+    event_id, revision_number, payload, state, created_by
+  ) values (
+    new_event_id,
+    1,
+    event_payload - array[
+      'id', 'created_by', 'reviewed_by', 'review_status', 'published_at',
+      'published_revision_id', 'is_featured', 'is_anirox', 'created_at', 'updated_at'
+    ],
+    'draft',
+    actor
+  );
+
   insert into public.admin_audit_logs (actor_id, action, target_type, target_id)
   values (actor, 'event.create_draft', 'event', new_event_id::text);
   return new_event_id;
@@ -61,6 +74,7 @@ declare
   actor uuid := auth.uid();
   event_creator uuid;
   event_title text;
+  latest_revision_id uuid;
 begin
   if actor is null or not public.admin_has_role(array['review_publisher','system_owner']) then
     raise exception 'forbidden' using errcode = '42501';
@@ -70,11 +84,21 @@ begin
   from public.events where id = target_event_id for update;
   if not found then raise exception 'event not found' using errcode = 'P0002'; end if;
 
+  select id into latest_revision_id
+  from public.event_revisions
+  where event_id = target_event_id
+  order by revision_number desc
+  limit 1;
+
   update public.events
-    set review_status = 'approved', review_note = review_note_input, updated_at = now()
+    set review_status = 'approved', review_note = review_note_input,
+      published_revision_id = latest_revision_id, updated_at = now()
     where id = target_event_id;
-  insert into public.event_review_actions (event_id, action, actor_id, note)
-    values (target_event_id, 'review_publish', actor, review_note_input);
+  if latest_revision_id is not null then
+    update public.event_revisions set state = 'published' where id = latest_revision_id;
+  end if;
+  insert into public.event_review_actions (event_id, revision_id, action, actor_id, note)
+    values (target_event_id, latest_revision_id, 'review_publish', actor, review_note_input);
   insert into public.admin_audit_logs (actor_id, action, target_type, target_id)
     values (actor, 'event.review_publish', 'event', target_event_id::text);
 
