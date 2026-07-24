@@ -105,12 +105,30 @@ const protectedPolicies = await db.query(`
 `);
 assert.equal(protectedPolicies.rows.length, 0);
 
-const eventWriteGrants = await db.query(`
-  select privilege_type from information_schema.role_table_grants
-  where table_schema = 'public' and table_name = 'events'
-    and grantee = 'authenticated' and privilege_type in ('INSERT', 'UPDATE', 'DELETE')
+const protectedWriteGrants = await db.query(`
+  select table_name, privilege_type from information_schema.role_table_grants
+  where table_schema = 'public' and grantee = 'authenticated'
+    and (
+      (table_name in ('profiles', 'events') and privilege_type in ('INSERT', 'UPDATE', 'DELETE'))
+      or (table_name = 'notifications' and privilege_type in ('INSERT', 'DELETE'))
+    )
 `);
-assert.equal(eventWriteGrants.rows.length, 0);
+assert.equal(protectedWriteGrants.rows.length, 0);
+
+const allowedNotificationColumns = await db.query(`
+  select column_name from information_schema.column_privileges
+  where table_schema = 'public' and table_name = 'notifications'
+    and grantee = 'authenticated' and privilege_type = 'UPDATE'
+`);
+assert.deepEqual(allowedNotificationColumns.rows, [{ column_name: "is_read" }]);
+
+const adminFlagGrants = await db.query(`
+  select column_name from information_schema.column_privileges
+  where table_schema = 'public' and table_name = 'profiles'
+    and grantee = 'authenticated' and privilege_type = 'UPDATE'
+    and column_name in ('is_admin', 'is_super_admin')
+`);
+assert.equal(adminFlagGrants.rows.length, 0);
 
 const commands = await db.query(`
   select routine_name from information_schema.routines
