@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import AdminShell, { AdminMetric } from "@/components/admin/AdminShell";
+import ReviewPublishButton from "@/components/admin/ReviewPublishButton";
 
 export default function AdminPreviewPage() {
   if (process.env.NODE_ENV !== "development") notFound();
@@ -8,6 +9,7 @@ export default function AdminPreviewPage() {
     email: null,
     roles: ["system_owner" as const],
     source: "membership" as const,
+    schemaReady: true,
   };
   return (
     <AdminShell context={context} active="events" eyebrow="VISUAL ACCEPTANCE" title="活动工作区" description="本地视觉验收夹具，不读取数据库，不包含真实账号或联系人资料。">
@@ -25,6 +27,9 @@ export default function AdminPreviewPage() {
           </div>
         ))}
       </section>
+      <div className="mt-6 max-w-sm">
+        <ReviewPublishButton eventId="preview-event" eventTitle="本地视觉验收活动" />
+      </div>
     </AdminShell>
   );
 }

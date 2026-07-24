@@ -19,13 +19,13 @@ export default async function AdminDashboardPage() {
       active="dashboard"
       eyebrow="OPERATIONS OVERVIEW"
       title="工作台"
-      description="第一实施里程碑只提供态势与只读入口。审核发布仍是原子动作，但本页暂不开放执行按钮。"
+      description={context.schemaReady ? "集中查看运营态势。活动创建与审核发布通过受控命令执行，删除和批量危险操作暂不开放。" : "当前提供态势与只读入口；数据库命令层尚未启用。"}
     >
       <section aria-label="关键数据" className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <AdminMetric label="EVENTS" value={events.count ?? 0} note="活动总数" />
         <AdminMetric label="PENDING" value={pending.count ?? 0} note="待审核队列" />
         <AdminMetric label="USERS" value={users.count ?? 0} note="注册用户" />
-        <AdminMetric label="MODE" value="RO" note="只读工作区" />
+        <AdminMetric label="MODE" value={context.schemaReady ? "LIVE" : "RO"} note={context.schemaReady ? "受控命令已启用" : "只读工作区"} />
       </section>
 
       <section className="mt-7 border border-white/10 bg-[#111017]">

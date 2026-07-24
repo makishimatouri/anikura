@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import AdminShell from "@/components/admin/AdminShell";
+import ReviewPublishButton from "@/components/admin/ReviewPublishButton";
 import { requireAdminContext } from "@/lib/admin/context";
+import { canUseAdminCommand } from "@/lib/admin/policy";
 import { getServerSupabase } from "@/lib/auth";
 import { EVENT_TAG_LABELS, type EventTag } from "@/lib/types";
 
@@ -16,7 +18,7 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
 
   const tags = (event.tags ?? []) as EventTag[];
   return (
-    <AdminShell context={context} active="events" eyebrow="EVENT RECORD" title="活动详情" description="只读核对活动公开字段、来源、审核状态与兼容修订记录。首版不在详情页执行修改或危险操作。">
+    <AdminShell context={context} active="events" eyebrow="EVENT RECORD" title="活动详情" description={context.schemaReady ? "核对活动公开字段、来源、审核状态与修订记录；具备权限的角色可执行受控审核发布。" : "只读核对活动公开字段、来源、审核状态与兼容修订记录。数据库命令层尚未启用。"}>
       <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <section className="min-w-0 border border-white/10 bg-[#111017]">
           <div className="border-b border-white/10 px-4 py-5 sm:px-6">
@@ -51,6 +53,9 @@ export default async function AdminEventDetailPage({ params }: { params: Promise
         </section>
 
         <aside className="min-w-0 space-y-5">
+          {event.review_status === "pending" && canUseAdminCommand(context.schemaReady, context.roles, "event:review_publish") && (
+            <ReviewPublishButton eventId={event.id} eventTitle={event.title} />
+          )}
           <section className="border border-white/10 bg-[#111017] p-4 sm:p-5">
             <p className="font-en text-[10px] tracking-[0.18em] text-[#716a7b]">POSTER</p>
             {event.poster_url ? (

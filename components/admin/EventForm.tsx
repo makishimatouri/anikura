@@ -136,8 +136,7 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
       return;
     }
 
-    const redirectTo = isSuper ? "/admin/dashboard" : "/admin/panel";
-    router.push(redirectTo);
+    router.push("/admin/events");
     router.refresh();
   }
 

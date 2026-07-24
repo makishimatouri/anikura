@@ -1,7 +1,7 @@
 import Link from "next/link";
 import AdminShell from "@/components/admin/AdminShell";
 import { requireAdminContext } from "@/lib/admin/context";
-import { hasAdminCapability } from "@/lib/admin/policy";
+import { canUseAdminCommand } from "@/lib/admin/policy";
 import { getServerSupabase } from "@/lib/auth";
 
 type Filter = "all" | "pending" | "approved" | "rejected";
@@ -21,14 +21,14 @@ export default async function AdminEventsPage({ searchParams }: { searchParams: 
   ];
 
   return (
-    <AdminShell context={context} active="events" eyebrow="EVENT WORKSPACE" title="活动工作区" description="统一查看旧字段与新修订层的兼容数据。当前详情与列表均为只读，不提供批量审核、删除或精选切换。">
+    <AdminShell context={context} active="events" eyebrow="EVENT WORKSPACE" title="活动工作区" description={context.schemaReady ? "统一处理活动草稿、审核状态与兼容修订数据。删除和批量危险操作暂不开放。" : "统一查看旧字段与新修订层的兼容数据。数据库命令层尚未启用，当前保持只读。"}>
       <div className="flex flex-wrap items-center gap-2" aria-label="状态筛选">
         {filters.map((item) => (
           <Link key={item.value} href={item.value === "all" ? "/admin/events" : `/admin/events?status=${item.value}`} aria-current={filter === item.value ? "page" : undefined} className={`min-h-11 border px-4 py-3 text-xs ${filter === item.value ? "border-[#a855f7]/70 bg-[#a855f7]/10 text-white" : "border-white/10 text-[#8f8999] hover:text-white"}`}>
             {item.label}
           </Link>
         ))}
-        {context.source === "membership" && hasAdminCapability(context.roles, "event:create") && <Link href="/admin/events/new" className="min-h-11 border border-[#a855f7]/70 bg-[#a855f7] px-4 py-3 text-xs text-white sm:ml-auto">创建活动草稿</Link>}
+        {canUseAdminCommand(context.schemaReady, context.roles, "event:create") && <Link href="/admin/events/new" className="min-h-11 border border-[#a855f7]/70 bg-[#a855f7] px-4 py-3 text-xs text-white sm:ml-auto">创建活动草稿</Link>}
       </div>
 
       <div className="mt-5 overflow-hidden border border-white/10 bg-[#111017]">

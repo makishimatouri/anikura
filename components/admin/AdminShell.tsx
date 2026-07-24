@@ -49,7 +49,7 @@ export default function AdminShell({ context, active, eyebrow, title, descriptio
               <p className="mt-1 font-display text-2xl leading-none tracking-wide">CONTROL</p>
             </div>
             <span className="border border-[#a855f7]/40 bg-[#a855f7]/10 px-2 py-1 font-en text-[10px] tracking-[0.16em] text-[#cda8ff]">
-              READ ONLY
+              {context.schemaReady ? "CONTROLLED" : "READ ONLY"}
             </span>
           </div>
 
@@ -81,7 +81,7 @@ export default function AdminShell({ context, active, eyebrow, title, descriptio
               ))}
             </div>
             {context.source === "legacy" && (
-              <p className="mt-2 text-[10px] leading-4 text-[#716a7b]">旧管理员字段只读兼容</p>
+              <p className="mt-2 text-[10px] leading-4 text-[#716a7b]">旧管理员身份兼容</p>
             )}
           </div>
         </aside>

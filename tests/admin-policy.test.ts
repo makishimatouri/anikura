@@ -4,6 +4,7 @@ import {
   hasAdminCapability,
   canMarkNotificationRead,
   canTriggerReviewNotification,
+  canUseAdminCommand,
   legacyRoles,
   sanitizeEventCreateInput,
   type AdminRole,
@@ -68,4 +69,17 @@ test("普通用户不能触发给审核人写通知", () => {
 test("用户不能把他人的通知标为已读", () => {
   assert.equal(canMarkNotificationRead("user-a", "user-b"), false);
   assert.equal(canMarkNotificationRead("user-a", "user-a"), true);
+});
+
+test("数据库命令层未就绪时所有角色都保持只读", () => {
+  assert.equal(canUseAdminCommand(false, ["system_owner"], "event:create"), false);
+  assert.equal(canUseAdminCommand(false, ["review_publisher"], "event:review_publish"), false);
+});
+
+test("数据库命令层就绪后按角色开放创建和审核发布", () => {
+  assert.equal(canUseAdminCommand(true, ["information_entry"], "event:create"), true);
+  assert.equal(canUseAdminCommand(true, ["information_entry"], "event:review_publish"), false);
+  assert.equal(canUseAdminCommand(true, ["review_publisher"], "event:review_publish"), true);
+  assert.equal(canUseAdminCommand(true, ["operations_admin"], "event:create"), true);
+  assert.equal(canUseAdminCommand(true, ["system_owner"], "event:review_publish"), true);
 });

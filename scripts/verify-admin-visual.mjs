@@ -19,6 +19,13 @@ for (const viewport of [{ name: "desktop", width: 1440, height: 1000 }, { name: 
   assert.ok(dimensions.scrollWidth <= dimensions.clientWidth, `${viewport.name} has horizontal overflow`);
   const navigation = page.getByRole("navigation", { name: "后台主导航" });
   assert.ok(await navigation.isVisible(), `${viewport.name} navigation is hidden`);
+  const reviewButton = page.getByRole("button", { name: "审核并发布" });
+  assert.ok(await reviewButton.isVisible(), `${viewport.name} review command is hidden`);
+  const reviewButtonSize = await reviewButton.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { width: rect.width, height: rect.height };
+  });
+  assert.ok(reviewButtonSize.height >= 44, `${viewport.name} review command touch target is too short`);
   await page.screenshot({ path: `/private/tmp/anikura-admin-${viewport.name}.png`, fullPage: true });
   await page.close();
 }

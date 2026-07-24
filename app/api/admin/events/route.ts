@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { getServerSupabase } from "@/lib/auth";
 import { getAdminContext } from "@/lib/admin/context";
-import { hasAdminCapability, sanitizeEventCreateInput } from "@/lib/admin/policy";
+import { canUseAdminCommand, sanitizeEventCreateInput } from "@/lib/admin/policy";
 
 export async function POST(request: Request) {
   const context = await getAdminContext();
   if (!context) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!hasAdminCapability(context.roles, "event:create")) {
+  if (!context.schemaReady) return NextResponse.json({ error: "Admin schema unavailable" }, { status: 503 });
+  if (!canUseAdminCommand(context.schemaReady, context.roles, "event:create")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

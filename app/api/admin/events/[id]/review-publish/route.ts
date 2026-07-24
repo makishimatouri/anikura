@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSupabase } from "@/lib/auth";
 import { getAdminContext } from "@/lib/admin/context";
-import { hasAdminCapability } from "@/lib/admin/policy";
+import { canUseAdminCommand } from "@/lib/admin/policy";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -10,7 +10,8 @@ interface RouteContext {
 export async function POST(request: Request, { params }: RouteContext) {
   const context = await getAdminContext();
   if (!context) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!hasAdminCapability(context.roles, "event:review_publish")) {
+  if (!context.schemaReady) return NextResponse.json({ error: "Admin schema unavailable" }, { status: 503 });
+  if (!canUseAdminCommand(context.schemaReady, context.roles, "event:review_publish")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

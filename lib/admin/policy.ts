@@ -34,6 +34,15 @@ export function hasAdminCapability(
 ): boolean {
   return roles.some((role) => ROLE_CAPABILITIES[role].includes(capability));
 }
+
+export function canUseAdminCommand(
+  schemaReady: boolean,
+  roles: readonly AdminRole[],
+  capability: AdminCapability
+): boolean {
+  return schemaReady && hasAdminCapability(roles, capability);
+}
+
 /** 旧管理员字段只用于只读兼容；新授权以 membership roles 为准。 */
 export function legacyRoles(isAdmin: boolean, isSuperAdmin: boolean): AdminRole[] {
   if (isSuperAdmin) return ["system_owner"];
