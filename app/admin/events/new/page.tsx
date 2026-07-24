@@ -1,19 +1,11 @@
-import { getServerSupabase, requireAdmin } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import AdminShell from "@/components/admin/AdminShell";
 import EventForm from "@/components/admin/EventForm";
+import { requireAdminContext } from "@/lib/admin/context";
+import { hasAdminCapability } from "@/lib/admin/policy";
 
 export default async function NewEventPage() {
-  const session = await requireAdmin();
-  const supabase = await getServerSupabase();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_super_admin")
-    .eq("id", session.user.id)
-    .single();
-
-  return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
-      <h1 className="text-2xl font-bold mb-8">新增活动</h1>
-      <EventForm isSuper={!!profile?.is_super_admin} />
-    </div>
-  );
+  const context = await requireAdminContext();
+  if (!hasAdminCapability(context.roles, "event:create")) redirect("/admin/events");
+  return <AdminShell context={context} active="events" eyebrow="CONTROLLED COMMAND" title="创建活动草稿" description="创建者由服务端会话确定；审核状态、发布状态、厂牌和精选标记不能由客户端指定。"><div className="max-w-3xl border border-white/10 bg-[#111017] p-4 sm:p-6"><EventForm /></div></AdminShell>;
 }

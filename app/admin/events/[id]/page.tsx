@@ -1,79 +1,85 @@
 import { notFound } from "next/navigation";
-import { getServerSupabase, requireAdmin } from "@/lib/auth";
-import EventForm from "@/components/admin/EventForm";
+import AdminShell from "@/components/admin/AdminShell";
+import { requireAdminContext } from "@/lib/admin/context";
+import { getServerSupabase } from "@/lib/auth";
+import { EVENT_TAG_LABELS, type EventTag } from "@/lib/types";
 
-interface PageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function EditEventPage({ params }: PageProps) {
-  const session = await requireAdmin();
-  const supabase = await getServerSupabase();
+export default async function AdminEventDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const context = await requireAdminContext();
   const { id } = await params;
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_super_admin")
-    .eq("id", session.user.id)
-    .single();
-
-  const { data: event } = await supabase.from("events").select("*").eq("id", id).single();
+  const supabase = await getServerSupabase();
+  const [{ data: event }, revisions] = await Promise.all([
+    supabase.from("events").select("*").eq("id", id).maybeSingle(),
+    supabase.from("event_revisions").select("id,revision_number,state,created_at").eq("event_id", id).order("revision_number", { ascending: false }).limit(10),
+  ]);
   if (!event) notFound();
 
+  const tags = (event.tags ?? []) as EventTag[];
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold">编辑活动</h1>
-        <div className="mt-2 flex items-center gap-3 text-xs text-text-muted flex-wrap">
-          {event.review_status && (
-            <span>
-              审核状态：{event.review_status === "pending" ? "待审核" : event.review_status === "approved" ? "已通过" : "已驳回"}
-            </span>
-          )}
-          {event.import_batch && <span>导入批次：{event.import_batch}</span>}
-          {event.source && <span>来源：{event.source === "bulk-import" ? "批量导入" : "手动创建"}</span>}
-          {event.review_note && <span className="text-red-400/80">驳回备注：{event.review_note}</span>}
-        </div>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] gap-8 items-start">
-        {event.poster_url ? (
-          <div className="lg:sticky lg:top-20">
-            <a href={event.poster_url} target="_blank" rel="noreferrer" className="block group">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={event.poster_url}
-                alt={event.title}
-                className="w-full rounded-lg border border-bg-elevated transition-opacity group-hover:opacity-90"
-              />
-              <p className="mt-2 text-xs text-text-muted text-center">点击放大查看原图（主海报）</p>
-            </a>
-            {(event.poster_urls?.length ?? 0) > 0 && (
-              <div className="mt-3 space-y-2">
-                <p className="text-xs text-text-muted">其他版本（{event.poster_urls.length}）：</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {event.poster_urls.map((url: string, i: number) => (
-                    <a key={url} href={url} target="_blank" rel="noreferrer" className="block group">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={url}
-                        alt={`海报版本 ${i + 2}`}
-                        className="w-full rounded-lg border border-bg-elevated transition-opacity group-hover:opacity-90"
-                      />
-                    </a>
-                  ))}
-                </div>
+    <AdminShell context={context} active="events" eyebrow="EVENT RECORD" title="活动详情" description="只读核对活动公开字段、来源、审核状态与兼容修订记录。首版不在详情页执行修改或危险操作。">
+      <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <section className="min-w-0 border border-white/10 bg-[#111017]">
+          <div className="border-b border-white/10 px-4 py-5 sm:px-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-en text-[10px] tracking-[0.18em] text-[#716a7b]">{event.id}</p>
+                <h2 className="mt-2 break-words text-xl font-semibold text-white sm:text-2xl">{event.title}</h2>
               </div>
+              <State value={event.review_status} />
+            </div>
+          </div>
+          <dl className="grid sm:grid-cols-2">
+            <Field label="日期" value={`${event.date}${event.start_time ? ` ${event.start_time.slice(0, 5)}` : ""}`} />
+            <Field label="城市与场地" value={`${event.city} · ${event.venue}`} />
+            <Field label="具体地址" value={event.address} />
+            <Field label="主办方" value={event.organizer} />
+            <Field label="票价" value={event.ticket_price} />
+            <Field label="活动状态" value={event.status} />
+            <Field label="来源" value={event.source === "bulk-import" ? "批量导入" : "手动创建"} />
+            <Field label="导入批次" value={event.import_batch} />
+          </dl>
+          <div className="border-t border-white/10 px-4 py-5 sm:px-6">
+            <p className="font-en text-[10px] tracking-[0.18em] text-[#716a7b]">TAGS</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {tags.length ? tags.map((tag) => <span key={tag} className="border border-[#a855f7]/30 bg-[#a855f7]/8 px-2 py-1 text-xs text-[#c8b0e5]">{EVENT_TAG_LABELS[tag] ?? tag}</span>) : <span className="text-sm text-[#716a7b]">无标签</span>}
+            </div>
+          </div>
+          <div className="border-t border-white/10 px-4 py-5 sm:px-6">
+            <p className="font-en text-[10px] tracking-[0.18em] text-[#716a7b]">DESCRIPTION</p>
+            <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-7 text-[#aaa3b2]">{event.description || "暂无活动说明"}</p>
+          </div>
+        </section>
+
+        <aside className="min-w-0 space-y-5">
+          <section className="border border-white/10 bg-[#111017] p-4 sm:p-5">
+            <p className="font-en text-[10px] tracking-[0.18em] text-[#716a7b]">POSTER</p>
+            {event.poster_url ? (
+              <a href={event.poster_url} target="_blank" rel="noreferrer" className="mt-3 block overflow-hidden border border-white/10">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={event.poster_url} alt={event.title} className="h-auto w-full" />
+              </a>
+            ) : (
+              <div className="mt-3 grid aspect-[3/4] place-items-center border border-dashed border-white/10 text-xs text-[#716a7b]">暂无海报</div>
             )}
-          </div>
-        ) : (
-          <div className="hidden lg:flex items-center justify-center h-40 rounded-lg border border-dashed border-bg-elevated text-sm text-text-muted">
-            暂无海报
-          </div>
-        )}
-        <div>
-          <EventForm initialData={event} isSuper={!!profile?.is_super_admin} />
-        </div>
+          </section>
+          <section className="border border-white/10 bg-[#111017] p-4 sm:p-5">
+            <p className="font-en text-[10px] tracking-[0.18em] text-[#716a7b]">REVISION HISTORY</p>
+            <div className="mt-3 space-y-2">
+              {(revisions.data ?? []).map((revision) => <div key={revision.id} className="flex items-center justify-between border border-white/10 px-3 py-2 text-xs"><span>修订 {revision.revision_number}</span><span className="text-[#81798a]">{revision.state}</span></div>)}
+              {(revisions.data ?? []).length === 0 && <p className="text-xs leading-5 text-[#716a7b]">暂无新修订记录，当前展示旧字段兼容数据。</p>}
+            </div>
+          </section>
+        </aside>
       </div>
-    </div>
+    </AdminShell>
   );
+}
+
+function Field({ label, value }: { label: string; value: string | null | undefined }) {
+  return <div className="min-w-0 border-b border-white/10 px-4 py-4 sm:border-r sm:px-6"><dt className="font-en text-[10px] tracking-[0.16em] text-[#716a7b]">{label}</dt><dd className="mt-2 break-words text-sm text-[#b9b2c1]">{value || "—"}</dd></div>;
+}
+
+function State({ value }: { value: string | null }) {
+  const label = value === "approved" ? "已发布" : value === "rejected" ? "已驳回" : "待审核";
+  return <span className="border border-[#a855f7]/35 bg-[#a855f7]/8 px-3 py-1.5 text-xs text-[#c8b0e5]">{label}</span>;
 }

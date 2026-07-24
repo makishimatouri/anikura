@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminContext } from "@/lib/admin/context";
 
 export default async function AdminIndexPage() {
-  await requireAdmin();
+  await requireAdminContext();
   redirect("/admin/dashboard");
 }

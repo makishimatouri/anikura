@@ -59,3 +59,18 @@ export function sanitizeEventCreateInput(input: Record<string, unknown>) {
     Object.entries(input).filter(([key]) => !protectedFields.has(key))
   );
 }
+
+export function canTriggerReviewNotification(input: {
+  actorId: string;
+  eventCreatorId: string | null;
+  reviewStatus: string | null;
+  roles: readonly AdminRole[];
+}): boolean {
+  return input.actorId === input.eventCreatorId
+    && input.reviewStatus === "pending"
+    && hasAdminCapability(input.roles, "admin:access");
+}
+
+export function canMarkNotificationRead(actorId: string, notificationOwnerId: string): boolean {
+  return actorId === notificationOwnerId;
+}

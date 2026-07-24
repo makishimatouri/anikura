@@ -35,7 +35,11 @@ export async function POST(req: NextRequest) {
   const { action, notificationId } = await req.json();
 
   if (action === "mark_read") {
-    await admin.from("notifications").update({ is_read: true }).eq("id", notificationId);
+    await admin
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("id", notificationId)
+      .eq("user_id", userData.user.id);
   } else if (action === "mark_all_read") {
     await admin.from("notifications").update({ is_read: true }).eq("user_id", userData.user.id).eq("is_read", false);
   }

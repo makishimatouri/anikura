@@ -11,7 +11,9 @@ export async function middleware(req: NextRequest) {
     (c) => c.name.startsWith("sb-") && c.name.includes("auth-token")
   ) || req.cookies.get("sb-access-token");
 
-  if (req.nextUrl.pathname.startsWith("/admin") && req.nextUrl.pathname !== "/admin/login") {
+  const isLocalAdminPreview = process.env.NODE_ENV === "development"
+    && req.nextUrl.pathname === "/admin/preview";
+  if (req.nextUrl.pathname.startsWith("/admin") && req.nextUrl.pathname !== "/admin/login" && !isLocalAdminPreview) {
     if (!sbCookie) {
       return NextResponse.redirect(new URL("/admin/login", req.url));
     }
