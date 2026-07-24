@@ -17,6 +17,13 @@
 - 性能：Anton 字体 preload、Supabase Storage 域名 preconnect、海报墙首行（透过 Hero 镂空立即可见）改 eager 加载并加 decoding=async
 - 移动端 390px 全页面截图验收：版式无溢出；AniROX 页头 logo 与导航栏厂牌 logo 去重
 
+收口补充（审查修复）：
+
+- 统一使用 Asia/Shanghai 业务日期，修复北京时间凌晨活动筛选和签到日期错位
+- 签到与积分兑换改由原子化数据库 RPC 处理，避免并发扣减和多步写入不一致
+- 管理员审核和通知已读操作补充失败反馈；`bokakura` 明确显示为“Vocaloid DJ”
+- 移除已弃用且无引用的 `@supabase/auth-helpers-nextjs` 依赖
+
 ## v0.3.2 - 2026-07-19
 
 前端重构 Phase 3（/events 列表页 + 活动详情页）。
