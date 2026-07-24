@@ -28,7 +28,7 @@ export default async function AdminEventsPage({ searchParams }: { searchParams: 
             {item.label}
           </Link>
         ))}
-        {hasAdminCapability(context.roles, "event:create") && <Link href="/admin/events/new" className="min-h-11 border border-[#a855f7]/70 bg-[#a855f7] px-4 py-3 text-xs text-white sm:ml-auto">创建活动草稿</Link>}
+        {context.source === "membership" && hasAdminCapability(context.roles, "event:create") && <Link href="/admin/events/new" className="min-h-11 border border-[#a855f7]/70 bg-[#a855f7] px-4 py-3 text-xs text-white sm:ml-auto">创建活动草稿</Link>}
       </div>
 
       <div className="mt-5 overflow-hidden border border-white/10 bg-[#111017]">
