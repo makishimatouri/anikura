@@ -27,10 +27,31 @@ await db.exec(`
     id uuid primary key default gen_random_uuid(),
     title text not null,
     date date not null,
+    start_time time,
+    end_time time,
     city text not null,
     venue text not null,
+    address text,
+    tags text[] default '{}',
+    header_image_url text,
+    poster_url text,
+    description text,
+    ticket_price text,
+    ticket_link text,
+    organizer text,
+    status text default 'ongoing',
+    qq_group text,
+    qq_groups text[],
+    has_lottery boolean default false,
+    lottery_points_cost integer default 30,
     review_status text,
-    created_by uuid references auth.users(id)
+    review_note text,
+    created_by uuid references auth.users(id),
+    source text default 'manual',
+    is_featured boolean default false,
+    is_anirox boolean default false,
+    created_at timestamptz default now(),
+    updated_at timestamptz default now()
   );
   create table public.notifications (
     id uuid primary key default gen_random_uuid(),
@@ -59,9 +80,14 @@ const migration = await readFile(
   new URL("../supabase/migrations/202607240001_admin_console_v2_security_foundation.sql", import.meta.url),
   "utf8"
 );
+const commandsMigration = await readFile(
+  new URL("../supabase/migrations/202607240002_admin_console_v2_commands.sql", import.meta.url),
+  "utf8"
+);
 
 await db.exec("begin");
 await db.exec(migration);
+await db.exec(commandsMigration);
 
 const tables = await db.query(`
   select table_name from information_schema.tables
@@ -85,6 +111,13 @@ const eventWriteGrants = await db.query(`
     and grantee = 'authenticated' and privilege_type in ('INSERT', 'UPDATE', 'DELETE')
 `);
 assert.equal(eventWriteGrants.rows.length, 0);
+
+const commands = await db.query(`
+  select routine_name from information_schema.routines
+  where routine_schema = 'public'
+    and routine_name in ('admin_create_event_draft', 'admin_review_publish_event')
+`);
+assert.equal(commands.rows.length, 2);
 
 await db.exec("rollback");
 console.log("Admin migration dry-run passed in isolated PGlite transaction (rolled back).");

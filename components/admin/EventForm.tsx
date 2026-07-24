@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Event, EventTag, EventStatus } from "@/lib/types";
@@ -24,11 +24,6 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [userId, setUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setUserId(data.session?.user.id ?? null));
-  }, []);
 
   const [form, setForm] = useState({
     title: initialData?.title ?? "",
@@ -114,54 +109,31 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
 
     const headerImageValue = form.header_image_url.trim() || null;
     const cleanedGroups = qqGroups.map((g) => g.trim()).filter(Boolean);
+    if (initialData) {
+      setError("旧版编辑入口已切换为只读，请在活动工作区查看详情。");
+      setLoading(false);
+      return;
+    }
+
     const payload = {
       ...form,
-      header_image_url: undefined as string | null | undefined,
+      header_image_url: headerImageValue,
       poster_url: form.poster_url.trim() || null,
       qq_group: cleanedGroups[0] ?? null,
       qq_groups: cleanedGroups.length ? cleanedGroups : null,
       qq_group_name: null,
-      review_status: isSuper ? "approved" : "pending",
-      updated_at: new Date().toISOString(),
     };
-    if (headerImageValue || initialData?.header_image_url !== undefined) {
-      payload.header_image_url = headerImageValue;
-    }
-
-    const { error } = initialData
-      ? await supabase.from("events").update(payload).eq("id", initialData.id)
-      : await supabase.from("events").insert({ ...payload, created_by: userId });
+    const response = await fetch("/api/admin/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
     setLoading(false);
 
-    if (error) {
-      if (error.message.includes("header_image_url")) {
-        setError("保存失败：数据库还没有添加头图字段 header_image_url。请先在 Supabase SQL Editor 执行仓库里的 supabase/migrations/20260709_add_event_header_image.sql。");
-        return;
-      }
-      if (error.message.includes("qq_groups")) {
-        setError("保存失败：数据库还没有添加多群字段 qq_groups。请先在 Supabase SQL Editor 执行仓库里的 supabase/migrations/20260718_event_qq_groups.sql。");
-        return;
-      }
-      setError("保存失败：" + error.message);
+    if (!response.ok) {
+      setError("保存失败：服务端未接受本次活动创建请求。");
       return;
-    }
-
-    // 非超管编辑「已通过」活动：保存后已回落 pending 暂时下线，通知所有超管复核
-    if (initialData && !isSuper && initialData.review_status === "approved") {
-      try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData.session?.access_token;
-        if (token) {
-          await fetch("/api/notify-supers", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-            body: JSON.stringify({ eventId: initialData.id, title: form.title }),
-          });
-        }
-      } catch {
-        // 通知失败不阻塞保存流程
-      }
     }
 
     const redirectTo = isSuper ? "/admin/dashboard" : "/admin/panel";
@@ -472,46 +444,6 @@ export default function EventForm({ initialData, isSuper = false }: EventFormPro
         >
           {loading ? "保存中…" : initialData ? "保存修改" : "创建活动"}
         </button>
-        {isSuper && initialData && initialData.review_status === "pending" && (
-          <>
-            <button
-              type="button"
-              onClick={async () => {
-                if (!confirm("确认通过该活动？")) return;
-                const { error } = await supabase.from("events").update({ review_status: "approved" }).eq("id", initialData.id);
-                if (error) {
-                  alert("审核操作失败：" + error.message);
-                  return;
-                }
-                router.push("/admin/dashboard");
-                router.refresh();
-              }}
-              className="px-6 py-2.5 rounded-lg bg-green-600 text-white font-medium hover:bg-green-500"
-            >
-              审核通过
-            </button>
-            <button
-              type="button"
-              onClick={async () => {
-                const reason = prompt("驳回原因（可选，将记录到审核备注）：");
-                if (reason === null) return;
-                const { error } = await supabase
-                  .from("events")
-                  .update({ review_status: "rejected", review_note: reason || null })
-                  .eq("id", initialData.id);
-                if (error) {
-                  alert("驳回操作失败：" + error.message);
-                  return;
-                }
-                router.push("/admin/dashboard");
-                router.refresh();
-              }}
-              className="px-6 py-2.5 rounded-lg border border-red-500/50 text-red-400 hover:bg-red-500/10"
-            >
-              拒绝
-            </button>
-          </>
-        )}
         <button
           type="button"
           onClick={() => router.push(isSuper ? "/admin/dashboard" : "/admin/panel")}
