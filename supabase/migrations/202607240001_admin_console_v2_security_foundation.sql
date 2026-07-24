@@ -126,25 +126,6 @@ create policy admin_event_assets_read on public.event_assets
 create policy admin_audit_logs_read on public.admin_audit_logs
   for select to authenticated using (public.admin_has_role(array['operations_admin','system_owner']));
 
--- A0 trust-boundary closure: browser roles have no direct write path for protected resources.
-drop policy if exists "profiles_insert" on public.profiles;
-drop policy if exists "profiles_update" on public.profiles;
-revoke insert, update, delete on public.profiles from anon, authenticated;
-
-drop policy if exists "auth_insert ON events" on public.events;
-drop policy if exists "auth_update" on public.events;
-drop policy if exists "auth_delete" on public.events;
-revoke insert, update, delete on public.events from anon, authenticated;
-
-drop policy if exists "notif_insert" on public.notifications;
-revoke insert, delete, update on public.notifications from anon, authenticated;
-grant update (is_read) on public.notifications to authenticated;
-drop policy if exists "notif_update" on public.notifications;
-create policy notif_update_own_read_state on public.notifications
-  for update to authenticated
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
-
 revoke insert, update, delete on public.admin_memberships, public.admin_membership_roles,
   public.event_revisions, public.event_review_actions, public.event_assets,
   public.submission_contacts, public.admin_audit_logs from anon, authenticated;

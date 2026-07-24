@@ -86,6 +86,10 @@ const commandsMigration = await readFile(
   new URL("../supabase/migrations/202607240002_admin_console_v2_commands.sql", import.meta.url),
   "utf8"
 );
+const securityClosureMigration = await readFile(
+  new URL("../supabase/migrations/202607240003_admin_console_v2_security_closure.sql", import.meta.url),
+  "utf8"
+);
 
 await db.exec("begin");
 await db.exec(migration);
@@ -99,38 +103,13 @@ const tables = await db.query(`
 `);
 assert.equal(tables.rows.length, 7);
 
-const protectedPolicies = await db.query(`
+const legacyPoliciesBeforeClosure = await db.query(`
   select policyname from pg_policies
   where schemaname = 'public'
     and policyname in ('profiles_insert', 'profiles_update', 'auth_insert ON events',
       'auth_update', 'auth_delete', 'notif_insert')
 `);
-assert.equal(protectedPolicies.rows.length, 0);
-
-const protectedWriteGrants = await db.query(`
-  select table_name, privilege_type from information_schema.role_table_grants
-  where table_schema = 'public' and grantee = 'authenticated'
-    and (
-      (table_name in ('profiles', 'events') and privilege_type in ('INSERT', 'UPDATE', 'DELETE'))
-      or (table_name = 'notifications' and privilege_type in ('INSERT', 'DELETE'))
-    )
-`);
-assert.equal(protectedWriteGrants.rows.length, 0);
-
-const allowedNotificationColumns = await db.query(`
-  select column_name from information_schema.column_privileges
-  where table_schema = 'public' and table_name = 'notifications'
-    and grantee = 'authenticated' and privilege_type = 'UPDATE'
-`);
-assert.deepEqual(allowedNotificationColumns.rows, [{ column_name: "is_read" }]);
-
-const adminFlagGrants = await db.query(`
-  select column_name from information_schema.column_privileges
-  where table_schema = 'public' and table_name = 'profiles'
-    and grantee = 'authenticated' and privilege_type = 'UPDATE'
-    and column_name in ('is_admin', 'is_super_admin')
-`);
-assert.equal(adminFlagGrants.rows.length, 0);
+assert.equal(legacyPoliciesBeforeClosure.rows.length, 6);
 
 const commands = await db.query(`
   select routine_name from information_schema.routines
@@ -172,6 +151,41 @@ const published = await db.query(`select review_status, published_revision_id is
 assert.deepEqual(published.rows, [{ review_status: "approved", has_revision: true }]);
 const notification = await db.query(`select user_id from public.notifications where reference_id = $1`, [eventId]);
 assert.deepEqual(notification.rows, [{ user_id: editorId }]);
+
+await db.exec(securityClosureMigration);
+
+const protectedPolicies = await db.query(`
+  select policyname from pg_policies
+  where schemaname = 'public'
+    and policyname in ('profiles_insert', 'profiles_update', 'auth_insert ON events',
+      'auth_update', 'auth_delete', 'notif_insert')
+`);
+assert.equal(protectedPolicies.rows.length, 0);
+
+const protectedWriteGrants = await db.query(`
+  select table_name, privilege_type from information_schema.role_table_grants
+  where table_schema = 'public' and grantee = 'authenticated'
+    and (
+      (table_name in ('profiles', 'events') and privilege_type in ('INSERT', 'UPDATE', 'DELETE'))
+      or (table_name = 'notifications' and privilege_type in ('INSERT', 'DELETE'))
+    )
+`);
+assert.equal(protectedWriteGrants.rows.length, 0);
+
+const allowedNotificationColumns = await db.query(`
+  select column_name from information_schema.column_privileges
+  where table_schema = 'public' and table_name = 'notifications'
+    and grantee = 'authenticated' and privilege_type = 'UPDATE'
+`);
+assert.deepEqual(allowedNotificationColumns.rows, [{ column_name: "is_read" }]);
+
+const adminFlagGrants = await db.query(`
+  select column_name from information_schema.column_privileges
+  where table_schema = 'public' and table_name = 'profiles'
+    and grantee = 'authenticated' and privilege_type = 'UPDATE'
+    and column_name in ('is_admin', 'is_super_admin')
+`);
+assert.equal(adminFlagGrants.rows.length, 0);
 
 await db.exec("rollback");
 console.log("Admin migration dry-run passed in isolated PGlite transaction (rolled back).");
